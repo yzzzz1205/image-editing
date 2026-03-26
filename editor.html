@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <title>圖片編輯</title>
+  <style>
+    body {
+      font-family: '微軟正黑體';
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      padding: 30px;
+      text-align: center;
+      position: relative;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .image-container {
+      width: 640px;
+      height: 360px;
+      margin: 0 auto 40px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      box-shadow: 0 8px 20px rgb(98, 141, 206);
+    }
+
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .tool-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .tool-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .tool-item:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      background: #eaf6ff;
+    }
+
+    .tool-item img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 5px;
+    }
+
+    .action-btns {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btns button {
+      background: #4da6e9;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease;
+    }
+
+    .action-btns button:hover {
+      transform: scale(1.1);
+      background: #2690ae;
+    }
+
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo" />
+    <span>修起來</span>
+  </div>
+
+  <h2>圖片編輯</h2>
+
+  <div class="action-btns">
+    <button onclick="saveImage()">✓</button>
+  </div>
+
+  <div class="image-container">
+    <img id="singleImage" alt="單張圖片" />
+  </div>
+
+  <div class="tool-row">
+    <div class="tool-item" onclick="window.location.href='sticker.html'">
+      <img src="icon-sticker.png" alt="貼紙" />
+      貼紙
+    </div>
+    <div class="tool-item" onclick="window.location.href='filter.html'">
+      <img src="icon-filter.png" alt="濾鏡" />
+      濾鏡
+    </div>
+    <div class="tool-item" onclick="window.location.href='adjust.html'">
+      <img src="icon-adjust.png" alt="調色" />
+      調色
+    </div>
+    <div class="tool-item" onclick="window.location.href='brush.html'">
+      <img src="icon-brush.png" alt="塗鴉筆" />
+      塗鴉筆
+    </div>
+    <div class="tool-item" onclick="window.location.href='template.html'">
+      <img src="icon-template.png" alt="模板" />
+      模板
+    </div>
+  </div>
+
+  <script>
+    const imgEl = document.getElementById('singleImage');
+    const images = JSON.parse(localStorage.getItem('collageImages')) || [];
+    let originalSrc = '';
+
+    if (images.length === 1 && images[0].startsWith('data:image')) {
+      originalSrc = images[0];
+      imgEl.src = originalSrc;
+    } else {
+      alert('無有效圖片，將返回首頁。');
+      window.location.href = 'index.html';
+    }
+
+    function saveImage() {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        localStorage.setItem('finalCollage', dataURL);
+        window.location.href = 'result.html';
+      };
+      img.crossOrigin = 'anonymous';
+      img.src = imgEl.src;
+
+      //防誤點
+      document.querySelector('body').style.pointerEvents = 'none';
+    }
+  </script>
+</body>
+
+</html>

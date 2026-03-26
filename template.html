@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>模板選擇</title>
+  <style>
+    body {
+      min-height: 100vh;
+      font-family: '微軟正黑體';
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      padding: 30px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    #canvasWrapper {
+      display: inline-block;
+      border-radius: 20px;
+      background: transparent;
+      box-shadow: 0 6px 18px rgb(98, 141, 206);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+
+    .templates {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .templates button {
+      border: 2px solid #888;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      background: white;
+      transition: all 0.25s ease;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .templates button:hover {
+      background-color: #e2f3ff;
+      transform: translateY(-2px);
+      box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .templates button:active {
+      transform: scale(0.96);
+      background-color: #cbe9fd;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .templates button.active {
+      background-color: #7ecdf7;
+      color: #fff;
+      border-color: #2690ae;
+      font-weight: bold;
+      box-shadow: 0 0 0 3px rgba(38, 144, 174, 0.3);
+    }
+
+    .action-btns {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btns button {
+      background: #4da6e9;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .action-btns button:hover {
+      transform: scale(1.1);
+      background: #2690ae;
+    }
+
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo" />
+    <span>修起來</span>
+  </div>
+
+  <h2>選擇模板</h2>
+
+  <div class="action-btns">
+    <button onclick="reset()">⟲</button>
+    <button onclick="save()">✓</button>
+  </div>
+
+  <div id="canvasWrapper">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="templates">
+    <button onclick="selectTemplate('film')">🎞️ 膠片樣式</button>
+    <button onclick="selectTemplate('birthday')">🎂 生日快樂</button>
+    <button onclick="selectTemplate('mirror')">🔁 翻轉對稱</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const buttons = document.querySelectorAll(".templates button");
+    const canvasWrapper = document.getElementById("canvasWrapper");
+
+    let baseImage = new Image();
+    const images = JSON.parse(localStorage.getItem("collageImages")) || [];
+    if (images.length !== 1) {
+      alert("請先上傳一張圖片");
+      window.location.href = "upload.html";
+    }
+    baseImage.src = images[0];
+
+    let selectedTemplate = null;
+
+    baseImage.onload = () => {
+      const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
+      let width = 640;
+      let height = width / ratio;
+
+      if (height > 640) {
+        height = 640;
+        width = height * ratio;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      canvasWrapper.style.width = width + 'px';
+      canvasWrapper.style.height = height + 'px';
+
+      selectTemplate('film');
+    };
+
+    function drawTemplate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!selectedTemplate) {
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      if (selectedTemplate !== "birthday") {
+        const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
+        let width = 640;
+        let height = width / ratio;
+
+        if (height > 640) {
+          height = 640;
+          width = height * ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        canvasWrapper.style.width = width + 'px';
+        canvasWrapper.style.height = height + 'px';
+      }
+
+
+      if (selectedTemplate === 'mirror') {
+        const halfH = canvas.height / 2;
+
+        // 上半部正常
+        ctx.drawImage(baseImage, 0, 0, canvas.width, halfH);
+
+        // 下半部鏡像
+        ctx.save();
+        ctx.translate(0, canvas.height);
+        ctx.scale(1, -1);
+        ctx.drawImage(baseImage, 0, 0, canvas.width, halfH);
+        ctx.restore();
+      } else if (selectedTemplate === "film") {
+        // 畫主圖片
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+        // 畫上下黑條
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, 40);
+        ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+
+        // 畫左右膠片孔
+        for (let y = 50; y < canvas.height - 50; y += 30) {
+          ctx.fillRect(10, y, 10, 10);
+          ctx.fillRect(canvas.width - 20, y, 10, 10);
+        }
+      } else if (selectedTemplate === "birthday") {
+        const birthdayWidth = 640;
+        const birthdayHeight = 640;
+        canvas.width = birthdayWidth;
+        canvas.height = birthdayHeight;
+        canvasWrapper.style.width = birthdayWidth + "px";
+        canvasWrapper.style.height = birthdayHeight + "px";
+
+        // 背景漸層
+        const grad = ctx.createLinearGradient(0, 0, 0, birthdayHeight);
+        grad.addColorStop(0, "#ffe7ec");
+        grad.addColorStop(1, "#fffafc");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 星星閃爍裝飾
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * 180;
+          const radius = Math.random() * 2 + 1;
+          ctx.fillStyle = "#ffd700";
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 彩帶
+        ctx.strokeStyle = "#ff69b4";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 50);
+        ctx.bezierCurveTo(160, 0, 320, 100, 480, 40);
+        ctx.bezierCurveTo(540, 80, 640, 20, 640, 20);
+        ctx.stroke();
+
+        // 彩球
+        function drawBalloon(x, y, color) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.ellipse(x, y, 20, 30, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(x, y + 30);
+          ctx.lineTo(x, y + 60);
+          ctx.strokeStyle = "#444";
+          ctx.stroke();
+        }
+        drawBalloon(100, 80, "#f66");
+        drawBalloon(540, 90, "#6cf");
+        drawBalloon(180, 60, "#fc6");
+        drawBalloon(460, 60, "#9f9");
+        drawBalloon(320, 100, "#f9c");
+
+        // 主圖片置中
+        const maxWidth = 480;
+        const maxHeight = 360;
+        const iw = baseImage.naturalWidth;
+        const ih = baseImage.naturalHeight;
+        const scale = Math.min(maxWidth / iw, maxHeight / ih);
+        const drawW = iw * scale;
+        const drawH = ih * scale;
+        const drawX = (canvas.width - drawW) / 2;
+        const drawY = 180;
+        ctx.drawImage(baseImage, drawX, drawY, drawW, drawH);
+
+        // 三層蛋糕 🎂
+        const cakeX = 260, cakeY = 560;
+        ctx.fillStyle = "#ffb6c1"; // 底層
+        ctx.fillRect(cakeX, cakeY, 120, 30);
+        ctx.fillStyle = "#ffddee";
+        ctx.fillRect(cakeX + 10, cakeY - 30, 100, 25); // 中層
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(cakeX + 20, cakeY - 55, 80, 20); // 上層
+
+        // 蠟燭與火焰
+        ctx.fillStyle = "#f00";
+        ctx.fillRect(cakeX + 60, cakeY - 75, 6, 15);
+        ctx.fillStyle = "#ff0";
+        ctx.beginPath();
+        ctx.arc(cakeX + 63, cakeY - 78, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Happy Birthday 文字
+        ctx.fillStyle = "#ff4081";
+        ctx.font = "bold 36px 'Microsoft JhengHei', sans-serif";
+        ctx.fillText("🎉 Happy Birthday! 🎂", 130, 60);
+      }
+    }
+
+
+
+    function selectTemplate(name) {
+      selectedTemplate = name;
+      buttons.forEach(btn => btn.classList.remove("active"));
+      const btn = Array.from(buttons).find(b => b.innerText.includes(name === 'film' ? '膠片' : name === 'birthday' ? '生日' : '翻轉'));
+      if (btn) btn.classList.add("active");
+      drawTemplate();
+    }
+
+    function reset() {
+      selectedTemplate = null;
+      buttons.forEach(btn => btn.classList.remove("active"));
+
+      const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
+      let width = 640;
+      let height = width / ratio;
+
+      if (height > 640) {
+        height = 640;
+        width = height * ratio;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      canvasWrapper.style.width = width + "px";
+      canvasWrapper.style.height = height + "px";
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+    }
+
+
+    function save() {
+      const result = canvas.toDataURL();
+      localStorage.setItem("collageImages", JSON.stringify([result]));
+      window.location.href = "editor.html";
+    }
+  </script>
+</body>
+
+</html>

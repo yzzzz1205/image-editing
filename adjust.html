@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>調色編輯（RGB + HSL）</title>
+  <style>
+    body {
+      min-height: 100vh;
+      font-family: '微軟正黑體', sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      padding: 30px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    #canvasWrapper {
+      display: inline-block;
+      border-radius: 20px;
+      background: transparent;
+      margin-bottom: 30px;
+      box-shadow: 0 6px 20px rgb(98, 141, 206);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      border-radius: 20px;
+    }
+
+    .sliders-group {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      margin-bottom: 40px;
+    }
+
+    .sliders {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-row label {
+      width: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .slider-row span {
+      min-width: 40px;
+      background: #e0e7ef;
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 14px;
+    }
+
+    .slider-row input[type="range"] {
+      width: 200px;
+      height: 6px;
+      background: #cde7f6;
+      border-radius: 5px;
+      outline: none;
+      appearance: none;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #4da6e9;
+      cursor: pointer;
+      border: 2px solid white;
+      transition: background 0.2s;
+    }
+
+    .slider-row input[type="range"]:hover::-webkit-slider-thumb {
+      background: #268bd2;
+    }
+
+    .action-btns {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 200;
+    }
+
+
+    .action-btns button {
+      background: #4da6e9;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .action-btns button:hover {
+      transform: scale(1.1);
+      background: #2690ae;
+    }
+
+
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo" />
+    <span>修起來</span>
+  </div>
+
+  <h2>RGB 與 HSL 調整</h2>
+
+  <div class="action-btns">
+    <button onclick="reset()">⟲</button>
+    <button onclick="save()">✓</button>
+  </div>
+
+  <div id="canvasWrapper">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div style="margin-top: 40px;"></div>
+
+  <div class="sliders-group">
+    <div class="sliders">
+      <div class="slider-row"><label>R</label><span id="rVal">0</span><input type="range" min="-255" max="255" value="0"
+          id="rSlider" /></div>
+      <div class="slider-row"><label>G</label><span id="gVal">0</span><input type="range" min="-255" max="255" value="0"
+          id="gSlider" /></div>
+      <div class="slider-row"><label>B</label><span id="bVal">0</span><input type="range" min="-255" max="255" value="0"
+          id="bSlider" /></div>
+    </div>
+    <div class="sliders">
+      <div class="slider-row"><label>H</label><span id="hVal">0</span><input type="range" min="0" max="360" value="0"
+          id="hSlider" /></div>
+      <div class="slider-row"><label>S</label><span id="sVal">100</span><input type="range" min="0" max="200"
+          value="100" id="sSlider" /></div>
+      <div class="slider-row"><label>L</label><span id="lVal">100</span><input type="range" min="0" max="200"
+          value="100" id="lSlider" /></div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const canvasWrapper = document.getElementById("canvasWrapper");
+
+    const sliders = {
+      r: document.getElementById("rSlider"),
+      g: document.getElementById("gSlider"),
+      b: document.getElementById("bSlider"),
+      h: document.getElementById("hSlider"),
+      s: document.getElementById("sSlider"),
+      l: document.getElementById("lSlider")
+    };
+
+    const vals = {
+      r: document.getElementById("rVal"),
+      g: document.getElementById("gVal"),
+      b: document.getElementById("bVal"),
+      h: document.getElementById("hVal"),
+      s: document.getElementById("sVal"),
+      l: document.getElementById("lVal")
+    };
+
+    let originalImage = new Image();
+    let originalData;
+
+    const images = JSON.parse(localStorage.getItem("collageImages")) || [];
+
+    if (images.length === 1) {
+      originalImage.src = images[0];
+    } else {
+      alert("請先上傳圖片");
+      window.location.href = "template.html";
+    }
+
+    originalImage.onload = () => {
+      const ratio = originalImage.naturalWidth / originalImage.naturalHeight;
+      let width = 640;
+      let height = width / ratio;
+
+      if (height > 480) {
+        height = 480;
+        width = height * ratio;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      canvasWrapper.style.width = width + 'px';
+      canvasWrapper.style.height = height + 'px';
+
+      ctx.drawImage(originalImage, 0, 0, width, height);
+      originalData = ctx.getImageData(0, 0, width, height);
+    };
+
+    Object.values(sliders).forEach(slider =>
+      slider.addEventListener("input", updateImage)
+    );
+
+    function updateImage() {
+      for (const key in sliders) vals[key].textContent = sliders[key].value;
+
+      const imgData = ctx.createImageData(originalData.width, originalData.height);
+      const data = originalData.data;
+      const output = imgData.data;
+
+      const rOffset = parseInt(sliders.r.value);
+      const gOffset = parseInt(sliders.g.value);
+      const bOffset = parseInt(sliders.b.value);
+
+      const hShift = parseInt(sliders.h.value);
+      const sScale = parseInt(sliders.s.value) / 100;
+      const lScale = parseInt(sliders.l.value) / 100;
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+
+        // RGB 調整
+        r = clamp(r + rOffset);
+        g = clamp(g + gOffset);
+        b = clamp(b + bOffset);
+
+        // HSL 調整
+        let [h, s, l] = rgbToHsl(r, g, b);
+        h = (h * 360 + hShift) % 360 / 360;
+        s = clamp01(s * sScale);
+        l = clamp01(l * lScale);
+
+        [r, g, b] = hslToRgb(h, s, l);
+
+        output[i] = r;
+        output[i + 1] = g;
+        output[i + 2] = b;
+        output[i + 3] = data[i + 3];
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function reset() {
+      sliders.r.value = sliders.g.value = sliders.b.value = 0;
+      sliders.h.value = 0;
+      sliders.s.value = sliders.l.value = 100;
+      updateImage();
+    }
+
+    function save() {
+      const result = canvas.toDataURL("image/png");
+      localStorage.setItem("collageImages", JSON.stringify([result]));
+      window.location.href = "editor.html";
+    }
+
+
+    function clamp(val) {
+      return Math.max(0, Math.min(255, val));
+    }
+
+    function clamp01(val) {
+      return Math.max(0, Math.min(1, val));
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [h, s, l];
+    }
+
+    function hslToRgb(h, s, l) {
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+      }
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+  </script>
+</body>
+
+</html>

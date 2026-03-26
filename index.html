@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>圖片編輯首頁</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: '微軟正黑體', sans-serif;
+      background: linear-gradient(135deg, #f2fbfd, #e3f4ff);
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .wave-text {
+      display: flex;
+      font-size: 36px;
+      font-weight: bold;
+      justify-content: center;
+      color: #3a7ca5;
+      margin-bottom: 20px;
+      margin-top: 70px;
+    }
+
+    .wave-text span {
+      display: inline-block;
+      animation: wave 1.5s infinite;
+    }
+
+    .wave-text span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .wave-text span:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .wave-text span:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .wave-text span:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    .wave-text span:nth-child(5) {
+      animation-delay: 0.4s;
+    }
+
+    .wave-text span:nth-child(6) {
+      animation-delay: 0.5s;
+    }
+
+    .wave-text span:nth-child(7) {
+      animation-delay: 0.6s;
+    }
+
+    .wave-text span:nth-child(8) {
+      animation-delay: 0.7s;
+    }
+
+    .wave-text span:nth-child(9) {
+      animation-delay: 0.8s;
+    }
+
+    .wave-text span:nth-child(10) {
+      animation-delay: 0.9s;
+    }
+
+    @keyframes wave {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-15px);
+      }
+    }
+
+    .header-box {
+      position: relative;
+      margin: 0 auto 40px;
+      width: 90%;
+      max-width: 900px;
+      height: 260px;
+      border-radius: 30px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slide-text {
+      position: absolute;
+      bottom: 20px;
+      left: 30px;
+      font-size: 24px;
+      color: white;
+      font-weight: bold;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto 40px;
+    }
+
+    .tool {
+      background: white;
+      border-radius: 20px;
+      padding: 16px 20px;
+      width: 130px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tool:hover {
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(58, 124, 165, 0.2);
+    }
+
+    .tool img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+
+    .tool span {
+      font-size: 16px;
+      display: block;
+      margin-top: 6px;
+      color: #333;
+      text-align: center;
+      transition: transform 0.3s, color 0.3s;
+    }
+
+    .tool:hover span {
+      transform: scale(1.05);
+      color: #3a7ca5;
+    }
+
+    .tool.clicked {
+      animation: clickPulse 0.3s;
+    }
+
+    @keyframes clickPulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(0.92);
+        background-color: #d3efff;
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .import-section {
+      margin-top: 30px;
+    }
+
+    .import-btn {
+      background: linear-gradient(to right, #3a7ca5, #5db0d9);
+      color: white;
+      font-size: 20px;
+      padding: 14px 40px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .import-btn:hover {
+      background: linear-gradient(to right, #4a90c2, #6dc6f0);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .import-btn:active {
+      transform: scale(0.96);
+      background: linear-gradient(to right, #3485ae, #4da7d1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .import-btn.clicked {
+      animation: pulseBtn 0.3s;
+    }
+
+    @keyframes pulseBtn {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(0.94);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+    }
+
+    .dots div {
+      width: 14px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      transition: background-color 0.3s ease;
+    }
+
+    .dots div.active {
+      background: #fff;
+    }
+
+    .dots div:hover {
+      transform: scale(1.4);
+      background-color: #ffffff;
+      cursor: pointer;
+    }
+
+    #gallery-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #4e91c9, #3a7ca5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      font-size: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    #gallery-btn:hover {
+      background: linear-gradient(135deg, #31648f, #2a5f80);
+      transform: scale(1.05);
+    }
+
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo" />
+    <span>修起來</span>
+  </div>
+  <div class="wave-text">
+    <span>歡</span>
+    <span>迎</span>
+    <span>來</span>
+    <span>到</span>
+    <span>圖</span>
+    <span>片</span>
+    <span>編</span>
+    <span>輯</span>
+    <span>器</span>
+    <span>！</span>
+  </div>
+  <div id="gallery-btn" onclick="window.location.href='gallery.html'" title="我的展示牆">
+    <span>🖼️</span>
+  </div>
+
+  <div class="header-box">
+    <div class="slide active">
+      <img src="slide1.png" alt="幻燈片1" />
+      <div class="slide-text">百變模板自由拼貼</div>
+    </div>
+    <div class="slide">
+      <img src="slide2.PNG" alt="幻燈片2" />
+      <div class="slide-text">一鍵濾鏡風格到位</div>
+    </div>
+    <div class="slide">
+      <img src="slide3.PNG" alt="幻燈片3" />
+      <div class="slide-text">貼出你的獨特風格</div>
+    </div>
+    <div class="dots">
+      <div class="active"></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="tool" onclick="directNavigate.call(this,'upload.html')">
+      <img src="icon-layout.png" alt="拼圖" />
+      <span>拼圖</span>
+    </div>
+    <div class="tool" onclick="navigate.call(this, 'sticker.html')">
+      <img src="icon-sticker.png" alt="貼紙" />
+      <span>貼紙</span>
+    </div>
+    <div class="tool" onclick="navigate.call(this,'filter.html')">
+      <img src="icon-filter.png" alt="濾鏡" />
+      <span>濾鏡</span>
+    </div>
+    <div class="tool" onclick="navigate.call(this,'adjust.html')">
+      <img src="icon-adjust.png" alt="調色" />
+      <span>調色</span>
+    </div>
+    <div class="tool" onclick="navigate.call(this,'brush.html')">
+      <img src="icon-brush.png" alt="塗鴉筆" />
+      <span>塗鴉筆</span>
+    </div>
+    <div class="tool" onclick="navigate.call(this,'template.html')">
+      <img src="icon-template.png" alt="模板" />
+      <span>模板</span>
+    </div>
+  </div>
+
+
+  <div class="import-section">
+    <p style="font-size:18px; color:#3a7ca5; margin-bottom: 20px;">
+      開始你的創作之旅吧 ⬇
+    </p>
+    <label class="import-btn"
+      onclick="this.classList.add('clicked'); setTimeout(() => this.classList.remove('clicked'), 300)">
+      ＋ 導入照片
+      <input type="file" accept="image/*" onchange="handleUpload(event)">
+    </label>
+  </div>
+
+  <script>
+    let pendingRedirect = null;
+
+    function directNavigate(url) {
+      window.location.href = url;
+    }
+
+    function navigate(targetPage) {
+      const hasImage = localStorage.getItem('collageImages');
+      if (hasImage) {
+        window.location.href = targetPage;
+      } else {
+        pendingRedirect = targetPage;
+        document.querySelector('input[type="file"]').click();
+      }
+    }
+
+    function handleUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem('collageImages', JSON.stringify([e.target.result]));
+        localStorage.setItem('originalImage', e.target.result);
+        if (pendingRedirect) {
+          window.location.href = pendingRedirect;
+          pendingRedirect = null;
+        } else {
+          window.location.href = 'editor.html';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function directNavigate(url) {
+      const tool = event.currentTarget;
+      tool.classList.add("clicked");
+      setTimeout(() => {
+        window.location.href = url;
+      }, 200);
+    }
+
+    function navigate(targetPage) {
+      const tool = event.currentTarget;
+      const hasImage = localStorage.getItem('collageImages');
+
+      tool.classList.add("clicked");
+
+      setTimeout(() => {
+        if (hasImage) {
+          window.location.href = targetPage;
+        } else {
+          pendingRedirect = targetPage;
+          document.querySelector('input[type="file"]').click();
+        }
+      }, 200);
+    }
+    // 幻燈片輪播
+    let currentIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dots div');
+    let slideInterval = null;
+
+    // 顯示指定 index 的幻燈片
+    function showSlide(index) {
+      slides[currentIndex].classList.remove('active');
+      dots[currentIndex].classList.remove('active');
+
+      currentIndex = index;
+
+      slides[currentIndex].classList.add('active');
+      dots[currentIndex].classList.add('active');
+    }
+
+    // 自動輪播，3.5秒換一次
+    function startSlideShow() {
+      slideInterval = setInterval(() => {
+        let nextIndex = (currentIndex + 1) % slides.length;
+        showSlide(nextIndex);
+      }, 3500);
+    }
+
+    // 停止輪播
+    function stopSlideShow() {
+      clearInterval(slideInterval);
+    }
+
+    // 初始化：為每個圓點加上點擊事件
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => {
+        stopSlideShow();       // 停止自動輪播
+        showSlide(idx);        // 顯示點擊的幻燈片
+        startSlideShow();      // 重啟輪播計時器（可以選擇要不要重啟）
+      });
+    });
+
+    // 啟動輪播
+    startSlideShow();
+  </script>
+
+</body>
+<footer style="margin-top: 60px; font-size: 14px; color: #888;">
+  <img src="logo.PNG" style="height: 24px; vertical-align: middle;" /> 修起來 © 2025 - 打造你的風格人生
+</footer>
+
+</html>

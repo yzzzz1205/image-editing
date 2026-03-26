@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>拼圖上傳</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:'微軟正黑體', sans-serif;
+      background: linear-gradient(135deg, #e0f0ff, #f6faff);
+      margin: 0;
+      padding: 40px 20px;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      max-width: 480px;
+      width: 100%;
+      padding: 30px 40px 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(58,124,165, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      color: #3a7ca5;
+      letter-spacing: 1.5px;
+    }
+
+    .upload-btn {
+      background-color: #3a7ca5;
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: 600;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 5px 15px rgba(58,124,165, 0.4);
+      user-select: none;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .upload-btn:hover {
+      background-color: #2e6285;
+      box-shadow: 0 7px 18px rgba(46,98,133, 0.6);
+    }
+    .upload-btn:active {
+      transform: scale(0.98);
+    }
+
+    .info {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 25px;
+      user-select: none;
+    }
+
+    .thumbs {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+
+    .thumb-wrapper {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+      width: 110px;
+      height: 110px;
+      cursor: pointer;
+    }
+    .thumb-wrapper:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(58,124,165, 0.3);
+    }
+
+    .thumb-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #e74c3c;
+      border: none;
+      color: white;
+      font-weight: 700;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .remove-btn:hover {
+      background: #c0392b;
+    }
+
+    .confirm-btn {
+      background-color: #3a7ca5;
+      color: white;
+      border: none;
+      padding: 14px 50px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 7px 22px rgba(58,124,165, 0.45);
+      user-select: none;
+      width: 100%;
+      max-width: 300px;
+    }
+    .confirm-btn:hover {
+      background-color: #2e6285;
+      box-shadow: 0 9px 28px rgba(46,98,133, 0.6);
+    }
+    .confirm-btn:active {
+      transform: scale(0.97);
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 20px;
+      }
+      .thumb-wrapper {
+        width: 90px;
+        height: 90px;
+      }
+      .upload-btn, .confirm-btn {
+        font-size: 1.1rem;
+        padding: 12px 24px;
+      }
+    }
+        .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+    <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo"/>
+    <span>修起來</span>
+  </div>
+  <div class="container">
+    <h2>拼圖</h2>
+
+    <input type="file" id="imageInput" accept="image/*" hidden multiple>
+    <button class="upload-btn" onclick="document.getElementById('imageInput').click()">＋ 上傳圖片</button>
+    <span class="info">請選擇 2～4 張照片（已選擇 <span id="count">0</span> 張）</span>
+
+    <div class="thumbs" id="previewContainer"></div>
+
+    <button class="confirm-btn" onclick="confirmUpload()">確認</button>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const countText = document.getElementById('count');
+
+    let selectedImages = [];
+
+    imageInput.addEventListener('change', () => {
+      const files = [...imageInput.files];
+
+      files.forEach(file => {
+        if (selectedImages.length >= 4) {
+          alert("最多只能上傳4張圖片！");
+          return;
+        }
+
+        // 防止重複上傳同張圖片（依文件名稱和大小簡單判斷）
+        if(selectedImages.some(img => img.file.name === file.name && img.file.size === file.size)) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+          const imageObj = { file, dataUrl: e.target.result };
+          selectedImages.push(imageObj);
+          renderThumbnails();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      imageInput.value = ''; // reset input to allow re-selection of same file
+    });
+
+    function renderThumbnails() {
+      previewContainer.innerHTML = '';
+      selectedImages.forEach((imgObj, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('thumb-wrapper');
+
+        const img = document.createElement('img');
+        img.src = imgObj.dataUrl;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerText = '✕';
+        removeBtn.onclick = () => {
+          selectedImages.splice(index, 1);
+          renderThumbnails();
+        };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(removeBtn);
+        previewContainer.appendChild(wrapper);
+      });
+
+      countText.textContent = selectedImages.length;
+    }
+
+    function confirmUpload() {
+      const count = selectedImages.length;
+      if (count < 2 || count > 4) {
+        alert("上傳失敗，請上傳 2～4 張圖片！");
+        return;
+      }
+
+      // 儲存圖片資料至 localStorage
+      const imageBase64List = selectedImages.map(obj => obj.dataUrl);
+      localStorage.setItem('collageImages', JSON.stringify(imageBase64List));
+
+      // 導向模板選擇頁
+      window.location.href = 'ptemplate.html';
+    }
+  </script>
+</body>
+</html>

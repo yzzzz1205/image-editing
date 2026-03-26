@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>濾鏡編輯</title>
+    <style>
+        body {
+            font-family: '微軟正黑體';
+            background: linear-gradient(135deg, #e3f2fd, #ffffff);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .preview {
+            display: inline-block;
+            border-radius: 20px;
+            margin: 0 auto 40px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgb(98, 141, 206);
+            background: white;
+        }
+
+        .preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .filter-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .filter-option:hover {
+            transform: scale(1.08);
+            background: #eaf6ff;
+        }
+
+        .filter-option.active {
+            background-color: #d2ecfa;
+            box-shadow: 0 0 0 2px #4da6e9;
+        }
+
+        .filter-option img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-option span {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .action-btns {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btns button {
+            background: #4da6e9;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .action-btns button:hover {
+            transform: scale(1.1);
+            background: #2690ae;
+        }
+
+        .brand-logo {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .brand-logo img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .brand-logo span {
+            font-size: 25px;
+            font-weight: bold;
+            color: #2690ae;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="brand-logo">
+        <img src="logo.PNG" alt="Logo" class="logo" />
+        <span>修起來</span>
+    </div>
+
+    <h2>濾鏡</h2>
+
+    <div class="action-btns">
+        <button onclick="resetFilter()">⟲</button>
+        <button onclick="saveResult()">✓</button>
+    </div>
+
+    <div id="previewWrapper" class="preview">
+        <img id="previewImage" src="" alt="預覽圖片">
+    </div>
+
+    <div class="filters">
+        <div class="filter-option" onclick="applyFilter('none')">
+            <img src="icon-none.png" alt="無">
+            <span>無</span>
+        </div>
+        <div class="filter-option" onclick="applyFilter('sepia(0.6)')">
+            <img src="icon-sepia.png" alt="復古">
+            <span>復古</span>
+        </div>
+        <div class="filter-option" onclick="applyFilter('grayscale(1)')">
+            <img src="icon-bw.png" alt="黑白">
+            <span>黑白</span>
+        </div>
+        <div class="filter-option" onclick="applyFilter('contrast(150%)')">
+            <img src="icon-contrast.png" alt="對比">
+            <span>對比</span>
+        </div>
+        <div class="filter-option" onclick="applyFilter('blur(2px)')">
+            <img src="icon-blur.png" alt="模糊">
+            <span>模糊</span>
+        </div>
+        <div class="filter-option" onclick="applyFilter('brightness(1.3)')">
+            <img src="icon-bright.png" alt="明亮">
+            <span>明亮</span>
+        </div>
+    </div>
+
+    <script>
+        const previewImage = document.getElementById('previewImage');
+        const previewWrapper = document.getElementById('previewWrapper');
+        const images = JSON.parse(localStorage.getItem('collageImages')) || [];
+        let currentFilter = 'none';
+
+        if (images.length === 1) {
+            previewImage.src = images[0];
+            document.querySelectorAll('.filter-option')[0].classList.add('active');
+        } else {
+            window.location.href = 'template.html';
+        }
+
+        previewImage.onload = () => {
+            const ratio = previewImage.naturalWidth / previewImage.naturalHeight;
+            let width = 640;
+            let height = width / ratio;
+
+            if (height > 480) {
+                height = 480;
+                width = height * ratio;
+            }
+
+            previewWrapper.style.width = width + 'px';
+            previewWrapper.style.height = height + 'px';
+        }
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            previewImage.style.filter = filter;
+
+            // 移除所有按鈕的 active 樣式
+            document.querySelectorAll('.filter-option').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // 加上選到的那個
+            const selected = Array.from(document.querySelectorAll('.filter-option')).find(option => {
+                return option.onclick?.toString().includes(filter);
+            });
+
+            if (selected) {
+                selected.classList.add('active');
+            }
+        }
+
+        function resetFilter() {
+            applyFilter('none');
+        }
+
+        function saveResult() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.filter = currentFilter;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/png');
+
+                // ✅ 儲存至 collageImages，返回 editor
+                localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+                window.location.href = 'editor.html';
+            };
+            img.crossOrigin = 'anonymous';
+            img.src = previewImage.src;
+        }
+        function saveResult() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.filter = currentFilter;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/png');
+
+                // ✅ 儲存至 collageImages，返回 editor
+                localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+                window.location.href = 'editor.html';
+            };
+            img.crossOrigin = 'anonymous';
+            img.src = previewImage.src;
+        }
+
+    </script>
+</body>
+
+</html>

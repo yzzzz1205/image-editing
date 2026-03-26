@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>上傳圖片</title>
+  <style>
+    body { font-family: '微軟正黑體'; background: #f6faff; padding: 30px; }
+    .upload-btn, .confirm-btn {
+      background-color: #3a7ca5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .thumbs {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .thumb-wrapper {
+      position: relative;
+    }
+    .thumb-wrapper img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>上傳圖片</h2>
+
+  <input type="file" id="imageInput" accept="image/*" hidden>
+  <button class="upload-btn" onclick="document.getElementById('imageInput').click()">＋ 上傳圖片</button>
+  <p>請上傳 1 張圖片（目前：<span id="count">0</span> 張）</p>
+
+  <div class="thumbs" id="previewContainer"></div>
+
+  <button class="confirm-btn" onclick="confirmUpload()">確認</button>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const countText = document.getElementById('count');
+
+    let selectedImages = [];
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (!file) return;
+
+      if (selectedImages.length >= 1) {
+        alert("只能上傳一張圖片");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        selectedImages = [{ file, dataUrl: e.target.result }];
+        renderThumbnails();
+      };
+      reader.readAsDataURL(file);
+      imageInput.value = '';
+    });
+
+    function renderThumbnails() {
+      previewContainer.innerHTML = '';
+      selectedImages.forEach((imgObj, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('thumb-wrapper');
+
+        const img = document.createElement('img');
+        img.src = imgObj.dataUrl;
+
+        const btn = document.createElement('button');
+        btn.className = 'remove-btn';
+        btn.innerText = '✕';
+        btn.onclick = () => {
+          selectedImages.splice(index, 1);
+          renderThumbnails();
+        };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(btn);
+        previewContainer.appendChild(wrapper);
+      });
+
+      countText.textContent = selectedImages.length;
+    }
+
+    function confirmUpload() {
+      if (selectedImages.length !== 1) {
+        alert('請上傳 1 張圖片！');
+        return;
+      }
+      const base64Images = selectedImages.map(img => img.dataUrl);
+      localStorage.setItem('collageImages', JSON.stringify(base64Images));
+      window.location.href = 'editor.html';
+    }
+  </script>
+
+</body>
+</html>

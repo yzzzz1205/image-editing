@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>我的展示牆</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: '微軟正黑體', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #ffffff);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #3a7ca5;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .gallery img {
+            max-width: 280px;
+            max-height: 180px;
+            border-radius: 16px;
+            border: 4px solid #3a7ca5;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(58, 124, 165, 0.3);
+        }
+
+        /* ✅ 刪除按鈕（圓形） */
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background-color: #ff5f5f;
+            color: white;
+            border: none;
+            aspect-ratio: 1 / 1;
+            /* ✅ 保持寬高比為正圓 */
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            /* ✅ 移除 padding，避免變形 */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .delete-btn:hover {
+            background-color: #e64848;
+            transform: scale(1.1);
+        }
+
+        /* ✅ 刪除模式下顯示刪除按鈕 */
+        .delete-mode .delete-btn {
+            display: flex;
+        }
+
+        .image-wrapper.deleting .delete-btn {
+            display: block;
+        }
+
+        .btn-group {
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #3a7ca5;
+            color: white;
+            font-size: 16px;
+            padding: 12px 28px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(58, 124, 165, 0.2);
+        }
+
+        button:hover {
+            background-color: #5599c9;
+            transform: translateY(-2px);
+        }
+
+        button.clear {
+            background-color: #ff5f5f;
+        }
+
+        button.clear:hover {
+            background-color: #ff7f7f;
+            box-shadow: 0 4px 10px rgba(255, 95, 95, 0.3);
+        }
+
+        #doneDeletingBtn {
+            display: none;
+            background-color: #4caf50;
+        }
+
+        #doneDeletingBtn:hover {
+            background-color: #66bb6a;
+        }
+
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            animation: rotateZoomIn 0.6s ease;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes rotateZoomIn {
+            0% {
+                transform: scale(0.3) rotateX(0deg);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1) rotateX(360deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .brand-logo {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .brand-logo img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .brand-logo span {
+            font-size: 25px;
+            font-weight: bold;
+            color: #2690ae;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="brand-logo">
+        <img src="logo.PNG" alt="Logo" class="logo" />
+        <span>修起來</span>
+    </div>
+
+    <h1>我的展示牆 🖼️</h1>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="btn-group">
+        <button class="clear" onclick="enterDeleteMode()">清除圖片模式</button>
+        <button id="doneDeletingBtn" onclick="exitDeleteMode()">完成刪除 ✅</button>
+        <button onclick="downloadAllImages()">下載全部圖片</button>
+        <button onclick="goHome()">回到首頁</button>
+    </div>
+
+    <div id="lightbox" class="lightbox" style="display: none;" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="放大圖片">
+    </div>
+
+    <script>
+        const galleryContainer = document.getElementById('gallery');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const doneBtn = document.getElementById('doneDeletingBtn');
+        const galleryData = JSON.parse(localStorage.getItem('galleryImages')) || [];
+        let isDeleting = false;
+        const clearBtn = document.querySelector('button.clear');
+
+        function renderGallery() {
+            galleryContainer.innerHTML = '';
+            if (galleryData.length === 0) {
+                galleryContainer.innerHTML = '<p>目前沒有任何圖片，請先從完成頁上傳 📤</p>';
+                return;
+            }
+
+            galleryData.forEach((src, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'image-wrapper';
+                if (isDeleting) wrapper.classList.add('deleting');
+
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = '圖片';
+                img.onclick = () => {
+                    if (!isDeleting) showLightbox(src);
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '−';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteImage(index);
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(deleteBtn);
+                galleryContainer.appendChild(wrapper);
+            });
+        }
+
+        function enterDeleteMode() {
+            isDeleting = true;
+            doneBtn.style.display = 'inline-block';
+            clearBtn.style.display = 'none'; // ⛔ 隱藏「清除」按鈕
+            renderGallery();
+        }
+
+        function exitDeleteMode() {
+            isDeleting = false;
+            doneBtn.style.display = 'none';
+            clearBtn.style.display = 'inline-block'; // ✅ 回復「清除」按鈕
+            renderGallery();
+        }
+
+
+        function deleteImage(index) {
+            galleryData.splice(index, 1);
+            localStorage.setItem('galleryImages', JSON.stringify(galleryData));
+            renderGallery();
+        }
+
+        function goHome() {
+            localStorage.removeItem('collageImages');
+            window.location.href = 'index.html';
+        }
+
+        function showLightbox(src) {
+            lightboxImg.src = src;
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            lightboxImg.src = '';
+        }
+        function downloadAllImages() {
+            if (galleryData.length === 0) {
+                alert("目前沒有圖片可供下載！");
+                return;
+            }
+
+            galleryData.forEach((src, index) => {
+                const link = document.createElement('a');
+                link.href = src;
+                link.download = `image_${index + 1}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+
+        // 初始渲染
+        renderGallery();
+    </script>
+</body>
+
+</html>
