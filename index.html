@@ -35,7 +35,6 @@
       animation: wave 1.5s infinite;
     }
 
-    /* 動畫延遲設定 */
     .wave-text span:nth-child(1) { animation-delay: 0s; }
     .wave-text span:nth-child(2) { animation-delay: 0.1s; }
     .wave-text span:nth-child(3) { animation-delay: 0.2s; }
@@ -195,7 +194,6 @@
       z-index: 10;
     }
 
-    /* 頂部兩側定位欄 (與 brush.html 同步) */
     .brand-logo {
       position: absolute;
       top: 20px;
@@ -219,8 +217,6 @@
       letter-spacing: 1px;
     }
 
-
-    /* --- RWD 適配 --- */
     @media (max-width: 768px) {
       .wave-text { font-size: 28px; margin-top: 60px; }
       .header-box { height: 200px; }
@@ -233,7 +229,7 @@
     @media (max-width: 480px) {
       .wave-text { font-size: 22px; }
       .tools { gap: 15px; }
-      .tool { width: 45%; /* 每行放兩個 */ padding: 12px; }
+      .tool { width: 45%; padding: 12px; }
       .slide-text { font-size: 18px; }
     }
   </style>
@@ -314,13 +310,21 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        localStorage.setItem('collageImages', JSON.stringify([e.target.result]));
-        localStorage.setItem('originalImage', e.target.result);
-        if (pendingRedirect) {
-          window.location.href = pendingRedirect;
-          pendingRedirect = null;
-        } else {
-          window.location.href = 'editor.html';
+        try {
+          // 儲存圖片資料至 localStorage
+          localStorage.setItem('collageImages', JSON.stringify([e.target.result]));
+          localStorage.setItem('originalImage', e.target.result);
+
+          // 成功後跳轉
+          if (pendingRedirect) {
+            window.location.href = pendingRedirect;
+            pendingRedirect = null;
+          } else {
+            window.location.href = 'editor.html';
+          }
+        } catch (e) {
+          console.error("儲存失敗:", e);
+          alert("圖片容量太大，瀏覽器存不下！\n建議：\n1. 嘗試選擇解析度較低的照片。\n2. 選擇體積較小的圖片。\n3. 清除瀏覽器快取後再試。");
         }
       };
       reader.readAsDataURL(file);
