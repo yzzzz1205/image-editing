@@ -3,7 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>修圖完成</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
       margin: 0;
@@ -14,74 +16,10 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      position: relative; /* 確保絕對定位的 Logo 基於頁面定位 */
     }
 
-    .container {
-      background: white;
-      padding: 40px 30px;
-      border-radius: 24px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      width: 90%;
-      text-align: center;
-    }
-
-    h2 {
-      font-size: 28px;
-      color: #3a7ca5;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-
-    .result-img {
-      display: block;
-      margin: 0 auto 30px;
-      max-width: 100%;
-      max-height: 70vh;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(58, 124, 165, 0.2);
-      background: #f8f9fa;
-    }
-
-    @media (max-width: 768px) {
-      img {
-        max-width: 100%;
-        border-radius: 12px;
-      }
-    }
-
-    button {
-      background-color: #3a7ca5;
-      color: white;
-      font-size: 16px;
-      padding: 12px 24px;
-      margin: 10px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #5599c9;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(58, 124, 165, 0.2);
-    }
-
-    @media (max-width: 480px) {
-      h2 {
-        font-size: 24px;
-      }
-
-      button {
-        width: 100%;
-        margin: 10px 0;
-      }
-    }
-
+    /* 頂部兩側定位欄 (與 sticker.html 同步) */
     .brand-logo {
       position: absolute;
       top: 20px;
@@ -104,6 +42,83 @@
       color: #2690ae;
       letter-spacing: 1px;
     }
+
+    .container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      margin-top: 60px; /* 避免擋住 logo */
+    }
+
+    h2 {
+      font-size: 28px;
+      color: #3a7ca5;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .result-img {
+      display: block;
+      margin: 0 auto 30px;
+      max-width: 100%;
+      max-height: 70vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(58, 124, 165, 0.2);
+      background: #f8f9fa;
+    }
+
+    button {
+      background-color: #3a7ca5;
+      color: white;
+      font-size: 16px;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #5599c9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(58, 124, 165, 0.2);
+    }
+
+    /* 📱 RWD 適配 (與 sticker.html 同步) */
+    @media (max-width: 768px) {
+      .brand-logo {
+        top: 15px;
+        left: 15px;
+      }
+
+      .brand-logo img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .brand-logo span {
+        font-size: 20px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      button {
+        width: 100%;
+        margin: 10px 0;
+      }
+    }
   </style>
 </head>
 
@@ -112,6 +127,7 @@
     <img src="logo.PNG" alt="Logo" class="logo" />
     <span>修起來</span>
   </div>
+  
   <div class="container">
     <h2>修圖完成 🎉</h2>
     <img id="finalImage" class="result-img" alt="修圖結果" />
@@ -121,13 +137,13 @@
       <button onclick="uploadToGallery()">上傳到展示牆</button>
     </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     const imgData = localStorage.getItem('finalCollage');
     const finalImg = document.getElementById('finalImage');
 
     if (imgData) {
-
       finalImg.src = imgData;
       window.processedImageData = imgData;
     } else {
@@ -154,7 +170,7 @@
         window.location.href = 'editor.html';
       }
     }
-    // 當頁面載入完成後播放彩帶
+    
     window.onload = () => {
       confetti({
         particleCount: 150,
@@ -169,20 +185,11 @@
         alert('沒有圖片可上傳');
         return;
       }
-
-      // 取出原本的圖片陣列
       const gallery = JSON.parse(localStorage.getItem('galleryImages')) || [];
-
-      // 加入這次的新圖片
       gallery.push(currentImg);
-
-      // 儲存回 localStorage
       localStorage.setItem('galleryImages', JSON.stringify(gallery));
-
-      // 跳轉到展示頁
       window.location.href = 'gallery.html';
     }
-
   </script>
 </body>
 

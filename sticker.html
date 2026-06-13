@@ -3,71 +3,59 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>貼紙編輯</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
-      font-family: '微軟正黑體';
-      background: linear-gradient(135deg, #e3f2fd, #ffffff);
-      padding: 30px 20px;
-      position: relative;
       min-height: 100vh;
+      font-family: '微軟正黑體', sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      text-align: center;
+      padding: 30px 15px;
+      margin: 0;
       box-sizing: border-box;
+      position: relative;
     }
 
     h2 {
-      text-align: center;
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: #333;
     }
 
     .canvas-area {
       display: block;
-      margin: 40px auto 30px;
+      /* 改為 block 方便控制 */
+      margin: 0 auto 30px;
       position: relative;
       border-radius: 20px;
       background-color: white;
-      box-shadow: 0 8px 20px rgb(98, 141, 206);
+      box-shadow: 0 6px 18px rgb(98, 141, 206);
+      width: 100%;
+      /* 填滿父容器 */
+      max-width: 640px;
+      /* 限制最大寬度與 brush.html 一致 */
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
+    /* 確保內部圖片填滿容器 */
     .canvas-area img#baseImage {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: contain;
-      border-radius: 20px;
     }
 
+    /* 貼紙樣式 */
     .sticker {
       position: absolute;
       width: 60px;
       height: 60px;
       cursor: move;
-      resize: none;
-      /* 關閉瀏覽器預設resize */
-      overflow: visible;
-      /* 防止滾動條 */
-      transform-origin: center;
-      outline: none !important;
-      /* 移除外框 */
-      border: none !important;
-      box-shadow: none !important;
-    }
-
-    /* 存圖時專用的class，用來移除所有框線陰影 */
-    .clean-export * {
-      outline: none !important;
-      border: none !important;
-      box-shadow: none !important;
-      resize: none !important;
-      overflow: visible !important;
-    }
-
-    .resize-handle {
-      width: 10px;
-      height: 10px;
-      background-color: transparent;
-      /* 這行很重要 */
-      border: none;
-      /* 如果要有形狀，可用 border-radius 和 box-shadow */
-      cursor: nwse-resize;
-      position: absolute;
+      touch-action: none;
+      transform-origin: center center;
     }
 
     .sticker img {
@@ -77,38 +65,50 @@
       pointer-events: none;
     }
 
+    /* 操作按鈕樣式 */
     .sticker .delete-btn {
       position: absolute;
-      top: 10px;
-      right: 5px;
-      width: 13px;
-      height: 13px;
+      top: -10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background-color: red;
       color: white;
-      font-size: 10px;
-      line-height: 10px;
       text-align: center;
       cursor: pointer;
-      z-index: 2;
+      z-index: 10;
     }
 
     .sticker .rotate-btn {
       position: absolute;
-      bottom: 10px;
-      left: -0px;
-      width: 13px;
-      height: 13px;
+      bottom: -10px;
+      left: -10px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background-color: #555;
+      background-color: #3a7ca5;
       color: white;
-      font-size: 14px;
-      line-height: 10px;
       text-align: center;
       cursor: pointer;
-      z-index: 2;
+      z-index: 10;
     }
 
+    .sticker .resize-handle {
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #aaa;
+      color: white;
+      text-align: center;
+      cursor: se-resize;
+      z-index: 10;
+    }
+
+    /* 貼紙選擇區 */
     .sticker-palette {
       display: flex;
       justify-content: center;
@@ -123,65 +123,17 @@
       cursor: pointer;
     }
 
-    .sticker .resize-handle {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 15px;
-      height: 15px;
-      background: #aaa;
-      cursor: se-resize;
-      z-index: 2;
-    }
-
-    .toolbar {
-      text-align: center;
-      margin-top: 20px;
-    }
-
     .upload-btn {
+      display: inline-block;
       background: linear-gradient(90deg, #7ec1f7, #4da6e9);
-      border: none;
       padding: 10px 24px;
       border-radius: 25px;
-      font-size: 16px;
-      cursor: pointer;
       color: white;
+      cursor: pointer;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transition: background 0.3s;
     }
 
-    .upload-btn:hover {
-      background: linear-gradient(90deg, #4da6e9, #7ec1f7);
-    }
-
-    .action-btns {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .action-btns button {
-      background: #4da6e9;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 18px;
-      cursor: pointer;
-      color: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .action-btns button:hover {
-      transform: scale(1.1);
-      background: #2690ae;
-    }
-
-
+    /* 頂部兩側定位欄 (與 brush.html 同步) */
     .brand-logo {
       position: absolute;
       top: 20px;
@@ -204,6 +156,70 @@
       color: #2690ae;
       letter-spacing: 1px;
     }
+
+    .action-btns {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .action-btns button {
+      background: #4da6e9;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .action-btns button:hover {
+      transform: scale(1.1);
+      background: #2690ae;
+    }
+
+    /* 📱 RWD 適配 (與 brush.html 同步) */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px 10px;
+      }
+
+      .brand-logo {
+        top: 15px;
+        left: 15px;
+      }
+
+      .brand-logo img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .brand-logo span {
+        font-size: 20px;
+      }
+
+      .action-btns {
+        top: 15px;
+        right: 15px;
+      }
+
+      .action-btns button {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      h2 {
+        margin-top: 55px;
+        font-size: 22px;
+      }
+    }
   </style>
 </head>
 
@@ -215,13 +231,13 @@
 
   <h2>貼紙</h2>
 
-  <div class="canvas-area" id="canvasArea">
-    <img id="baseImage" src="" alt="主圖片">
-  </div>
-
   <div class="action-btns">
     <button onclick="location.reload()">⟲</button>
-    <button onclick="saveResult()">✓</button>
+    <button id="btnSave" onclick="saveResult()">✓</button>
+  </div>
+
+  <div class="canvas-area" id="canvasArea">
+    <img id="baseImage" src="" alt="主圖片">
   </div>
 
   <div class="sticker-palette" id="stickerPalette">
@@ -240,35 +256,37 @@
   </div>
 
   <script>
+    // ... (維持您原本的 JS 邏輯不變)
     const baseImage = document.getElementById('baseImage');
     const canvasArea = document.getElementById('canvasArea');
     const images = JSON.parse(localStorage.getItem('collageImages')) || [];
 
     if (images.length === 1) {
       baseImage.src = images[0];
-
       if (!localStorage.getItem('collageOriginal')) {
         localStorage.setItem('collageOriginal', images[0]);
       }
-
+      // 在 sticker.html 的 <script> 中找到 baseImage.onload，替換為以下邏輯：
       baseImage.onload = () => {
         const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
+
+        // 與 brush.html 一致的尺寸邏輯
         let width = 640;
         let height = width / ratio;
 
+        // 如果高度過高，限制高度為 480，並反推寬度
         if (height > 480) {
           height = 480;
           width = height * ratio;
         }
 
+        // 設定容器尺寸
         canvasArea.style.width = width + 'px';
         canvasArea.style.height = height + 'px';
 
-        baseImage.style.width = '100%';
-        baseImage.style.height = '100%';
-        baseImage.style.objectFit = 'contain';
+        console.log("尺寸已對齊：", width, "x", height);
       };
-    }else {
+    } else {
       alert('請先上傳圖片');
       window.location.href = 'template.html';
     }
@@ -279,16 +297,13 @@
       wrapper.style.top = '50px';
       wrapper.style.left = '50px';
       wrapper.dataset.rotation = '0';
-
       const img = document.createElement('img');
       img.src = src;
-
       img.onload = () => {
         const ratio = img.naturalWidth / img.naturalHeight;
         const defaultWidth = 80;
         wrapper.style.width = defaultWidth + 'px';
         wrapper.style.height = (defaultWidth / ratio) + 'px';
-
         wrapper.appendChild(deleteBtn);
         wrapper.appendChild(rotateBtn);
         wrapper.appendChild(resizeHandle);
@@ -299,102 +314,86 @@
       const deleteBtn = document.createElement('div');
       deleteBtn.className = 'delete-btn';
       deleteBtn.innerText = '×';
-      deleteBtn.onclick = () => wrapper.remove();
+      deleteBtn.onclick = (e) => { e.stopPropagation(); wrapper.remove(); };
 
       const rotateBtn = document.createElement('div');
       rotateBtn.className = 'rotate-btn';
       rotateBtn.innerText = '⟳';
-      let rotateInterval;
-
-      rotateBtn.addEventListener('mousedown', () => {
-        rotateInterval = setInterval(() => {
-          let current = parseFloat(wrapper.dataset.rotation);
-          current += 5;
-          wrapper.dataset.rotation = current;
-          wrapper.style.transform = `rotate(${current}deg)`;
-        }, 50); // 每50毫秒轉5度，滑順又不太快
-      });
-
-      rotateBtn.addEventListener('mouseup', () => {
-        clearInterval(rotateInterval);
-      });
-
-      rotateBtn.addEventListener('mouseleave', () => {
-        clearInterval(rotateInterval);
-      });
-
-      rotateBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // 避免手機畫面抖動
-        rotateInterval = setInterval(() => {
-          let current = parseFloat(wrapper.dataset.rotation);
-          current += 5;
-          wrapper.dataset.rotation = current;
-          wrapper.style.transform = `rotate(${current}deg)`;
-        }, 50);
-      }, { passive: false });
-
-      rotateBtn.addEventListener('touchend', () => {
-        clearInterval(rotateInterval);
-      });
+      function startRotate(clientX, clientY, isTouch = false) {
+        const rect = wrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const startAngle = Math.atan2(clientY - centerY, clientX - centerX);
+        const baseRotation = parseFloat(wrapper.dataset.rotation) || 0;
+        function onMove(moveEvent) {
+          const curX = isTouch ? moveEvent.touches[0].clientX : moveEvent.clientX;
+          const curY = isTouch ? moveEvent.touches[0].clientY : moveEvent.clientY;
+          const currentAngle = Math.atan2(curY - centerY, curX - centerX);
+          const angleDiff = currentAngle - startAngle;
+          const newRotation = baseRotation + angleDiff * (180 / Math.PI);
+          wrapper.dataset.rotation = newRotation;
+          wrapper.style.transform = `rotate(${newRotation}deg)`;
+        }
+        function onEnd() {
+          if (isTouch) { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd); }
+          else { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onEnd); }
+        }
+        if (isTouch) { document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onEnd); }
+        else { document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEnd); }
+      }
+      rotateBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); startRotate(e.clientX, e.clientY, false); });
+      rotateBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); startRotate(e.touches[0].clientX, e.touches[0].clientY, true); }, { passive: false });
 
       const resizeHandle = document.createElement('div');
       resizeHandle.className = 'resize-handle';
-
-      // ✅ 滑鼠拖曳縮放邏輯
-      resizeHandle.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const sticker = wrapper;
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startWidth = sticker.offsetWidth;
-        const startHeight = sticker.offsetHeight;
-
-        function onMouseMove(e) {
-          const newWidth = Math.max(30, startWidth + (e.clientX - startX));
-          const newHeight = Math.max(30, startHeight + (e.clientY - startY));
-          sticker.style.width = newWidth + 'px';
-          sticker.style.height = newHeight + 'px';
+      resizeHandle.innerText = '⤄';
+      function startResize(clientX, clientY, isTouch = false) {
+        const rect = wrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const startDist = Math.hypot(clientX - centerX, clientY - centerY);
+        const startWidth = parseFloat(wrapper.style.width) || rect.width;
+        const startHeight = parseFloat(wrapper.style.height) || rect.height;
+        const ratio = startWidth / startHeight;
+        function onMove(moveEvent) {
+          const curX = isTouch ? moveEvent.touches[0].clientX : moveEvent.clientX;
+          const curY = isTouch ? moveEvent.touches[0].clientY : moveEvent.clientY;
+          const currentDist = Math.hypot(curX - centerX, curY - centerY);
+          const scale = currentDist / startDist;
+          let newWidth = startWidth * scale;
+          if (newWidth < 30) newWidth = 30;
+          let newHeight = newWidth / ratio;
+          wrapper.style.width = newWidth + 'px';
+          wrapper.style.height = newHeight + 'px';
         }
-
-        function onMouseUp() {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
+        function onEnd() {
+          if (isTouch) { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd); }
+          else { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onEnd); }
         }
+        if (isTouch) { document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onEnd); }
+        else { document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEnd); }
+      }
+      resizeHandle.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); startResize(e.clientX, e.clientY, false); });
+      resizeHandle.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); startResize(e.touches[0].clientX, e.touches[0].clientY, true); }, { passive: false });
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-      });
-
-      // ✅ 拖曳功能（滑鼠事件）
       wrapper.addEventListener('mousedown', function (e) {
-        if (e.target.classList.contains('delete-btn') || e.target.classList.contains('rotate-btn')) return;
-
+        if (e.target.classList.contains('delete-btn') || e.target.classList.contains('rotate-btn') || e.target.classList.contains('resize-handle')) return;
         e.preventDefault();
         const sticker = this;
-        const shiftX = e.clientX - sticker.getBoundingClientRect().left;
-        const shiftY = e.clientY - sticker.getBoundingClientRect().top;
-
-        function onMouseMove(e) {
-          const canvasRect = canvasArea.getBoundingClientRect();
-          sticker.style.left = (e.clientX - canvasRect.left - shiftX) + 'px';
-          sticker.style.top = (e.clientY - canvasRect.top - shiftY) + 'px';
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = parseFloat(sticker.style.left) || 0;
+        const startTop = parseFloat(sticker.style.top) || 0;
+        function onMouseMove(moveEvent) {
+          const dx = moveEvent.clientX - startX;
+          const dy = moveEvent.clientY - startY;
+          sticker.style.left = (startLeft + dx) + 'px';
+          sticker.style.top = (startTop + dy) + 'px';
         }
-
-        function onMouseUp() {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-        }
-
+        function onMouseUp() { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
-
-      wrapper.appendChild(deleteBtn);
-      wrapper.appendChild(rotateBtn);
-      wrapper.appendChild(resizeHandle);
-      wrapper.appendChild(img);
-      canvasArea.appendChild(wrapper);
     }
 
     document.getElementById('uploadSticker').addEventListener('change', e => {
@@ -406,70 +405,75 @@
     });
 
     function saveResult() {
-      const originalBorder = canvasArea.style.border;
-      const originalBorderRadius = canvasArea.style.borderRadius;
+      const btnSave = document.getElementById('btnSave');
+      btnSave.disabled = true;
+
       const originalWidth = canvasArea.clientWidth;
       const originalHeight = canvasArea.clientHeight;
-
       const scaleX = baseImage.naturalWidth / originalWidth;
       const scaleY = baseImage.naturalHeight / originalHeight;
 
-      const stickers = canvasArea.querySelectorAll('.sticker');
-      const originalStyles = [];
+      // 1. 複製節點
+      const clone = canvasArea.cloneNode(true);
+      
+      // 2. 強制重置樣式，移除所有響應式限制
+      clone.style.position = 'fixed';
+      clone.style.left = '-99999px';
+      clone.style.top = '-99999px';
+      clone.style.width = baseImage.naturalWidth + 'px';
+      clone.style.height = baseImage.naturalHeight + 'px';
+      clone.style.maxWidth = 'none'; // 新增：移除最大寬度限制
+      clone.style.minWidth = 'none'; // 新增：移除最小寬度限制
+      clone.style.border = 'none';
+      clone.style.borderRadius = '0';
+      clone.style.boxShadow = 'none';
+      
+      // 確保內部圖片不受原本 CSS 的 object-fit 影響，強制填滿
+      const cloneImg = clone.querySelector('img#baseImage');
+      if (cloneImg) {
+        cloneImg.style.width = '100%';
+        cloneImg.style.height = '100%';
+        cloneImg.style.objectFit = 'fill'; 
+      }
 
-      stickers.forEach(sticker => {
-        const style = {
-          left: sticker.style.left,
-          top: sticker.style.top,
-          width: sticker.style.width,
-          height: sticker.style.height
-        };
-        originalStyles.push(style);
-
-        const scale = Math.min(scaleX, scaleY);
-
+      // 3. 處理貼紙尺寸
+      clone.querySelectorAll('.delete-btn, .rotate-btn, .resize-handle').forEach(el => el.remove());
+      const clonedStickers = clone.querySelectorAll('.sticker');
+      clonedStickers.forEach(sticker => {
         sticker.style.left = parseFloat(sticker.style.left) * scaleX + 'px';
         sticker.style.top = parseFloat(sticker.style.top) * scaleY + 'px';
         sticker.style.width = parseFloat(sticker.style.width) * scaleX + 'px';
         sticker.style.height = parseFloat(sticker.style.height) * scaleY + 'px';
       });
 
-      canvasArea.style.width = baseImage.naturalWidth + 'px';
-      canvasArea.style.height = baseImage.naturalHeight + 'px';
-      canvasArea.style.border = 'none';
-      canvasArea.style.borderRadius = '0';
-      canvasArea.classList.add('clean-export');
+      document.body.appendChild(clone);
 
-      document.querySelectorAll('.resize-handle, .delete-btn, .rotate-btn').forEach(el => el.style.display = 'none');
-      canvasArea.classList.add('clean-export');
-
-      setTimeout(() => {
-        html2canvas(canvasArea, { scale: 1 }).then(canvas => {
-          const result = canvas.toDataURL('image/png');
-          localStorage.setItem('collageImages', JSON.stringify([result]));
-          window.location.href = 'editor.html';
-        }).finally(() => {
-          stickers.forEach((sticker, i) => {
-            sticker.style.left = originalStyles[i].left;
-            sticker.style.top = originalStyles[i].top;
-            sticker.style.width = originalStyles[i].width;
-            sticker.style.height = originalStyles[i].height;
-          });
-
-          canvasArea.style.width = originalWidth + 'px';
-          canvasArea.style.height = originalHeight + 'px';
-          canvasArea.style.border = originalBorder;
-          canvasArea.style.borderRadius = originalBorderRadius;
-          canvasArea.classList.remove('clean-export');
-
-          document.querySelectorAll('.resize-handle, .delete-btn, .rotate-btn').forEach(el => el.style.display = 'block');
-        });
-      }, 300);
+      // 4. 渲染
+      html2canvas(clone, { 
+        scale: 1, 
+        useCORS: true, 
+        allowTaint: true, 
+        backgroundColor: null,
+        width: baseImage.naturalWidth,
+        height: baseImage.naturalHeight
+      }).then(canvas => {
+        let result = canvas.toDataURL('image/jpeg', 0.85);
+        try { 
+          localStorage.setItem('collageImages', JSON.stringify([result])); 
+          window.location.href = 'editor.html'; 
+        } catch (storageError) { 
+          result = canvas.toDataURL('image/jpeg', 0.6); 
+          localStorage.setItem('collageImages', JSON.stringify([result])); 
+          window.location.href = 'editor.html'; 
+        }
+      }).catch(err => { 
+        alert('儲存失敗，請重試！'); 
+        btnSave.disabled = false; 
+      }).finally(() => { 
+        clone.remove(); 
+      });
     }
-
   </script>
-
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 

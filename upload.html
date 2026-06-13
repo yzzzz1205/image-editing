@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>拼圖上傳</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
 
@@ -11,26 +14,58 @@
     }
 
     body {
-      font-family:'微軟正黑體', sans-serif;
+      position: relative;
+      /* 關鍵：確保 Logo 的絕對定位正確 */
+      min-height: 100vh;
+      font-family: '微軟正黑體', sans-serif;
       background: linear-gradient(135deg, #e0f0ff, #f6faff);
       margin: 0;
       padding: 40px 20px;
       color: #1a1a1a;
       display: flex;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      /* 讓內容置中 */
     }
 
+    /* --- Logo 樣式 (與 sticker.html 同步) --- */
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .brand-logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .brand-logo span {
+      font-size: 25px;
+      font-weight: bold;
+      color: #2690ae;
+      letter-spacing: 1px;
+    }
+
+    /* --- 主要內容區塊 --- */
     .container {
       background: white;
       max-width: 480px;
       width: 100%;
+      height: 700px;
       padding: 30px 40px 40px;
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(58,124,165, 0.25);
+      box-shadow: 0 8px 24px rgba(58, 124, 165, 0.25);
       display: flex;
       flex-direction: column;
       align-items: center;
+      margin-top: 40px;
+      /* 給 Logo 留出空間 */
     }
 
     h2 {
@@ -51,16 +86,18 @@
       font-size: 1.2rem;
       font-weight: 600;
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 5px 15px rgba(58,124,165, 0.4);
+      box-shadow: 0 5px 15px rgba(58, 124, 165, 0.4);
       user-select: none;
       margin-bottom: 15px;
       width: 100%;
       max-width: 280px;
     }
+
     .upload-btn:hover {
       background-color: #2e6285;
-      box-shadow: 0 7px 18px rgba(46,98,133, 0.6);
+      box-shadow: 0 7px 18px rgba(46, 98, 133, 0.6);
     }
+
     .upload-btn:active {
       transform: scale(0.98);
     }
@@ -85,15 +122,16 @@
       position: relative;
       border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease;
       width: 110px;
       height: 110px;
       cursor: pointer;
     }
+
     .thumb-wrapper:hover {
       transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(58,124,165, 0.3);
+      box-shadow: 0 5px 15px rgba(58, 124, 165, 0.3);
     }
 
     .thumb-wrapper img {
@@ -117,13 +155,14 @@
       font-size: 16px;
       line-height: 1;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       display: flex;
       justify-content: center;
       align-items: center;
       transition: background-color 0.3s ease;
       user-select: none;
     }
+
     .remove-btn:hover {
       background: #c0392b;
     }
@@ -138,61 +177,65 @@
       border-radius: 30px;
       cursor: pointer;
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 7px 22px rgba(58,124,165, 0.45);
+      box-shadow: 0 7px 22px rgba(58, 124, 165, 0.45);
       user-select: none;
       width: 100%;
       max-width: 300px;
     }
+
     .confirm-btn:hover {
       background-color: #2e6285;
-      box-shadow: 0 9px 28px rgba(46,98,133, 0.6);
+      box-shadow: 0 9px 28px rgba(46, 98, 133, 0.6);
     }
+
     .confirm-btn:active {
       transform: scale(0.97);
+    }
+
+    /* --- RWD 適配 (與 sticker.html 同步) --- */
+    @media (max-width: 768px) {
+      .brand-logo {
+        top: 15px;
+        left: 15px;
+      }
+
+      .brand-logo img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .brand-logo span {
+        font-size: 20px;
+      }
     }
 
     @media (max-width: 520px) {
       .container {
         padding: 20px;
+        margin-top: 20px;
+        /* 手機版向下推一點 */
       }
+
       .thumb-wrapper {
         width: 90px;
         height: 90px;
       }
-      .upload-btn, .confirm-btn {
+
+      .upload-btn,
+      .confirm-btn {
         font-size: 1.1rem;
         padding: 12px 24px;
       }
     }
-        .brand-logo {
-      position: absolute;
-      top: 20px;
-      left: 30px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 100;
-    }
-
-    .brand-logo img {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
-    }
-
-    .brand-logo span {
-      font-size: 25px;
-      font-weight: bold;
-      color: #2690ae;
-      letter-spacing: 1px;
-    }
   </style>
 </head>
+
 <body>
-    <div class="brand-logo">
-    <img src="logo.PNG" alt="Logo" class="logo"/>
+  <div class="brand-logo">
+    <img src="logo.PNG" alt="Logo" class="logo" />
     <span>修起來</span>
   </div>
+
   <div class="container">
     <h2>拼圖</h2>
 
@@ -221,8 +264,8 @@
           return;
         }
 
-        // 防止重複上傳同張圖片（依文件名稱和大小簡單判斷）
-        if(selectedImages.some(img => img.file.name === file.name && img.file.size === file.size)) {
+        // 防止重複上傳同張圖片
+        if (selectedImages.some(img => img.file.name === file.name && img.file.size === file.size)) {
           return;
         }
 
@@ -235,7 +278,7 @@
         reader.readAsDataURL(file);
       });
 
-      imageInput.value = ''; // reset input to allow re-selection of same file
+      imageInput.value = '';
     });
 
     function renderThumbnails() {
@@ -266,17 +309,24 @@
     function confirmUpload() {
       const count = selectedImages.length;
       if (count < 2 || count > 4) {
-        alert("上傳失敗，請上傳 2～4 張圖片！");
+        alert("請確認是否選擇 2～4 張圖片！");
         return;
       }
 
-      // 儲存圖片資料至 localStorage
-      const imageBase64List = selectedImages.map(obj => obj.dataUrl);
-      localStorage.setItem('collageImages', JSON.stringify(imageBase64List));
+      // 加入錯誤捕捉，防止因為圖片太大而造成程式崩潰
+      try {
+        // 儲存圖片資料至 localStorage
+        const imageBase64List = selectedImages.map(obj => obj.dataUrl);
+        localStorage.setItem('collageImages', JSON.stringify(imageBase64List));
 
-      // 導向模板選擇頁
-      window.location.href = 'ptemplate.html';
+        // 成功後跳轉
+        window.location.href = 'ptemplate.html';
+      } catch (e) {
+        console.error("儲存失敗:", e);
+        alert("圖片容量太大，瀏覽器存不下！\n建議：\n1. 嘗試選擇解析度較低的照片。\n2. 減少上傳的圖片張數。\n3. 清除瀏覽器快取後再試。");
+      }
     }
   </script>
 </body>
+
 </html>

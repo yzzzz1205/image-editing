@@ -3,31 +3,37 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>濾鏡編輯</title>
+    <link rel="icon" href="logo.PNG" type="image/PNG">
     <style>
         body {
-            font-family: '微軟正黑體';
+            font-family: '微軟正黑體', sans-serif;
             background: linear-gradient(135deg, #e3f2fd, #ffffff);
-            padding: 30px;
+            padding: 30px 15px;
             text-align: center;
             position: relative;
             min-height: 100vh;
             box-sizing: border-box;
+            margin: 0;
         }
 
         h2 {
             font-size: 28px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             color: #333;
         }
 
+        /* 預覽區域樣式：加入 max-width: 640px 限制 */
         .preview {
-            display: inline-block;
-            border-radius: 20px;
+            display: block; /* 改為 block 方便容器尺寸控制 */
             margin: 0 auto 40px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgb(98, 141, 206);
+            box-shadow: 0 6px 18px rgb(98, 141, 206);
             background: white;
+            max-width: 640px; /* 確保與其他頁面寬度上限一致 */
+            width: 100%; /* 預設寬度 */
         }
 
         .preview img {
@@ -40,9 +46,10 @@
         .filters {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
             flex-wrap: wrap;
             margin-top: 20px;
+            padding: 0 10px;
         }
 
         .filter-option {
@@ -56,7 +63,7 @@
         }
 
         .filter-option:hover {
-            transform: scale(1.08);
+            transform: scale(1.05);
             background: #eaf6ff;
         }
 
@@ -96,7 +103,7 @@
             cursor: pointer;
             color: white;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
 
         .action-btns button:hover {
@@ -126,6 +133,16 @@
             color: #2690ae;
             letter-spacing: 1px;
         }
+
+        @media (max-width: 768px) {
+            body { padding: 15px 10px; }
+            .brand-logo { top: 15px; left: 15px; }
+            .brand-logo img { width: 50px; height: 50px; }
+            .brand-logo span { font-size: 20px; }
+            .action-btns { top: 15px; right: 15px; }
+            .action-btns button { width: 36px; height: 36px; font-size: 16px; }
+            h2 { margin-top: 55px; margin-bottom: 15px; font-size: 22px; }
+        }
     </style>
 </head>
 
@@ -148,28 +165,22 @@
 
     <div class="filters">
         <div class="filter-option" onclick="applyFilter('none')">
-            <img src="icon-none.png" alt="無">
-            <span>無</span>
+            <img src="icon-none.png" alt="無"> <span>無</span>
         </div>
         <div class="filter-option" onclick="applyFilter('sepia(0.6)')">
-            <img src="icon-sepia.png" alt="復古">
-            <span>復古</span>
+            <img src="icon-sepia.png" alt="復古"> <span>復古</span>
         </div>
         <div class="filter-option" onclick="applyFilter('grayscale(1)')">
-            <img src="icon-bw.png" alt="黑白">
-            <span>黑白</span>
+            <img src="icon-bw.png" alt="黑白"> <span>黑白</span>
         </div>
         <div class="filter-option" onclick="applyFilter('contrast(150%)')">
-            <img src="icon-contrast.png" alt="對比">
-            <span>對比</span>
+            <img src="icon-contrast.png" alt="對比"> <span>對比</span>
         </div>
         <div class="filter-option" onclick="applyFilter('blur(2px)')">
-            <img src="icon-blur.png" alt="模糊">
-            <span>模糊</span>
+            <img src="icon-blur.png" alt="模糊"> <span>模糊</span>
         </div>
         <div class="filter-option" onclick="applyFilter('brightness(1.3)')">
-            <img src="icon-bright.png" alt="明亮">
-            <span>明亮</span>
+            <img src="icon-bright.png" alt="明亮"> <span>明亮</span>
         </div>
     </div>
 
@@ -177,16 +188,9 @@
         const previewImage = document.getElementById('previewImage');
         const previewWrapper = document.getElementById('previewWrapper');
         const images = JSON.parse(localStorage.getItem('collageImages')) || [];
-        let currentFilter = 'none';
-
-        if (images.length === 1) {
-            previewImage.src = images[0];
-            document.querySelectorAll('.filter-option')[0].classList.add('active');
-        } else {
-            window.location.href = 'template.html';
-        }
-
-        previewImage.onload = () => {
+        
+        // 設定圖片顯示尺寸的邏輯
+        function setDisplaySize() {
             const ratio = previewImage.naturalWidth / previewImage.naturalHeight;
             let width = 640;
             let height = width / ratio;
@@ -200,66 +204,45 @@
             previewWrapper.style.height = height + 'px';
         }
 
-        function applyFilter(filter) {
-            currentFilter = filter;
-            previewImage.style.filter = filter;
-
-            // 移除所有按鈕的 active 樣式
-            document.querySelectorAll('.filter-option').forEach(el => {
-                el.classList.remove('active');
-            });
-
-            // 加上選到的那個
-            const selected = Array.from(document.querySelectorAll('.filter-option')).find(option => {
-                return option.onclick?.toString().includes(filter);
-            });
-
-            if (selected) {
-                selected.classList.add('active');
+        if (images.length === 1) {
+            previewImage.src = images[0];
+            // 圖片載入後自動調整大小
+            if (previewImage.complete) {
+                setDisplaySize();
+            } else {
+                previewImage.onload = setDisplaySize;
             }
+            document.querySelectorAll('.filter-option')[0].classList.add('active');
+        } else {
+            window.location.href = 'template.html';
+        }
+
+        function applyFilter(filterStyle) {
+            previewImage.style.filter = filterStyle;
+            document.querySelectorAll('.filter-option').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
         function resetFilter() {
-            applyFilter('none');
+            previewImage.style.filter = 'none';
+            document.querySelectorAll('.filter-option').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.filter-option')[0].classList.add('active');
         }
 
         function saveResult() {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.filter = currentFilter;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
+            const canvas = document.createElement('canvas');
+            const img = previewImage;
+            
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = previewImage.style.filter || 'none';
+            ctx.drawImage(img, 0, 0);
 
-                // ✅ 儲存至 collageImages，返回 editor
-                localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
-                window.location.href = 'editor.html';
-            };
-            img.crossOrigin = 'anonymous';
-            img.src = previewImage.src;
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+            window.location.href = 'editor.html';
         }
-        function saveResult() {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.filter = currentFilter;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
-
-                // ✅ 儲存至 collageImages，返回 editor
-                localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
-                window.location.href = 'editor.html';
-            };
-            img.crossOrigin = 'anonymous';
-            img.src = previewImage.src;
-        }
-
     </script>
 </body>
 

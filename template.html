@@ -3,124 +3,64 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>模板選擇</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
       min-height: 100vh;
-      font-family: '微軟正黑體';
+      font-family: '微軟正黑體', sans-serif;
       background: linear-gradient(135deg, #e3f2fd, #ffffff);
-      padding: 30px;
+      padding: 30px 15px;
       text-align: center;
+      margin: 0;
+      box-sizing: border-box;
+      position: relative;
     }
 
-    h2 {
-      font-size: 26px;
-      margin-bottom: 20px;
-    }
+    h2 { font-size: 28px; margin-bottom: 25px; color: #333; }
 
     #canvasWrapper {
-      display: inline-block;
+      display: block;
+      margin: 0 auto 25px;
+      position: relative;
       border-radius: 20px;
-      background: transparent;
+      background: white;
       box-shadow: 0 6px 18px rgb(98, 141, 206);
       overflow: hidden;
+      max-width: 640px;
+      box-sizing: border-box;
     }
 
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      margin-bottom: 20px;
-    }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
-    .templates {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-top: 40px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
+    .templates { display: flex; justify-content: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
 
     .templates button {
-      border: 2px solid #888;
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 16px;
-      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 20px;
+      border: 2px solid #4da6e9;
       background: white;
-      transition: all 0.25s ease;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .templates button:hover {
-      background-color: #e2f3ff;
-      transform: translateY(-2px);
-      box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.15);
-    }
-
-    .templates button:active {
-      transform: scale(0.96);
-      background-color: #cbe9fd;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .templates button.active {
-      background-color: #7ecdf7;
-      color: #fff;
-      border-color: #2690ae;
-      font-weight: bold;
-      box-shadow: 0 0 0 3px rgba(38, 144, 174, 0.3);
-    }
-
-    .action-btns {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .action-btns button {
-      background: #4da6e9;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 18px;
+      color: #4da6e9;
       cursor: pointer;
-      color: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .action-btns button:hover {
-      transform: scale(1.1);
-      background: #2690ae;
-    }
-
-    .brand-logo {
-      position: absolute;
-      top: 20px;
-      left: 30px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 100;
-    }
-
-    .brand-logo img {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
-    }
-
-    .brand-logo span {
-      font-size: 25px;
       font-weight: bold;
-      color: #2690ae;
-      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+
+    .templates button.active { background: #4da6e9; color: white; }
+
+    .brand-logo { position: absolute; top: 20px; left: 30px; display: flex; align-items: center; gap: 10px; z-index: 100; }
+    .brand-logo img { width: 80px; height: 80px; object-fit: contain; }
+    .brand-logo span { font-size: 25px; font-weight: bold; color: #2690ae; letter-spacing: 1px; }
+
+    .action-btns { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+    .action-btns button { background: #4da6e9; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+
+    @media (max-width: 768px) {
+      .brand-logo { top: 15px; left: 15px; }
+      .brand-logo img { width: 50px; height: 50px; }
+      .brand-logo span { font-size: 20px; }
+      .action-btns { top: 15px; right: 15px; }
     }
   </style>
 </head>
@@ -156,33 +96,30 @@
 
     let baseImage = new Image();
     const images = JSON.parse(localStorage.getItem("collageImages")) || [];
-    if (images.length !== 1) {
-      alert("請先上傳一張圖片");
-      window.location.href = "upload.html";
-    }
+    if (images.length !== 1) { alert("請先上傳一張圖片"); window.location.href = "upload.html"; }
     baseImage.src = images[0];
 
     let selectedTemplate = null;
 
-    baseImage.onload = () => {
+    function setDisplaySize() {
       const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
       let width = 640;
       let height = width / ratio;
-
-      if (height > 640) {
-        height = 640;
-        width = height * ratio;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
+      if (height > 480) { height = 480; width = height * ratio; }
       canvasWrapper.style.width = width + 'px';
       canvasWrapper.style.height = height + 'px';
+    }
 
+    baseImage.onload = () => {
+      canvas.width = baseImage.naturalWidth;
+      canvas.height = baseImage.naturalHeight;
+      setDisplaySize();
       selectTemplate('film');
     };
 
     function drawTemplate() {
+      canvas.width = baseImage.naturalWidth;
+      canvas.height = baseImage.naturalHeight;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (!selectedTemplate) {
@@ -190,139 +127,91 @@
         return;
       }
 
-      if (selectedTemplate !== "birthday") {
-        const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
-        let width = 640;
-        let height = width / ratio;
-
-        if (height > 640) {
-          height = 640;
-          width = height * ratio;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        canvasWrapper.style.width = width + 'px';
-        canvasWrapper.style.height = height + 'px';
-      }
-
-
       if (selectedTemplate === 'mirror') {
         const halfH = canvas.height / 2;
-
-        // 上半部正常
         ctx.drawImage(baseImage, 0, 0, canvas.width, halfH);
-
-        // 下半部鏡像
         ctx.save();
         ctx.translate(0, canvas.height);
         ctx.scale(1, -1);
         ctx.drawImage(baseImage, 0, 0, canvas.width, halfH);
         ctx.restore();
       } else if (selectedTemplate === "film") {
-        // 畫主圖片
         ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
-
-        // 畫上下黑條
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, 40);
-        ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-
-        // 畫左右膠片孔
-        for (let y = 50; y < canvas.height - 50; y += 30) {
-          ctx.fillRect(10, y, 10, 10);
-          ctx.fillRect(canvas.width - 20, y, 10, 10);
+        
+        // 畫上下膠捲邊條
+        const barH = canvas.height * 0.1;
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, canvas.width, barH);
+        ctx.fillRect(0, canvas.height - barH, canvas.width, barH);
+        
+        // 畫膠捲孔 (Sprocket holes)
+        ctx.fillStyle = "#333";
+        const holeW = canvas.width * 0.04;
+        const holeH = barH * 0.5;
+        for (let x = 20; x < canvas.width; x += holeW * 2) {
+          // 圓角矩形邏輯
+          ctx.beginPath();
+          ctx.roundRect(x, barH * 0.25, holeW, holeH, 5);
+          ctx.roundRect(x, canvas.height - barH + barH * 0.25, holeW, holeH, 5);
+          ctx.fill();
         }
-      } else if (selectedTemplate === "birthday") {
-        const birthdayWidth = 640;
-        const birthdayHeight = 640;
-        canvas.width = birthdayWidth;
-        canvas.height = birthdayHeight;
-        canvasWrapper.style.width = birthdayWidth + "px";
-        canvasWrapper.style.height = birthdayHeight + "px";
+        
+        // 攝影細節字樣
+        ctx.fillStyle = "#555";
+        ctx.font = `bold ${barH * 0.4}px Arial`;
+        ctx.fillText("ISO 400  FILM-PRO", canvas.width * 0.05, barH * 0.7);
+        ctx.fillText("00:26  EXP", canvas.width * 0.05, canvas.height - barH * 0.3);
 
-        // 背景漸層
-        const grad = ctx.createLinearGradient(0, 0, 0, birthdayHeight);
-        grad.addColorStop(0, "#ffe7ec");
-        grad.addColorStop(1, "#fffafc");
+      } else if (selectedTemplate === "birthday") {
+        // 背景
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, "#fff0f5");
+        grad.addColorStop(1, "#ffe4e1");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 星星閃爍裝飾
-        for (let i = 0; i < 30; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * 180;
-          const radius = Math.random() * 2 + 1;
-          ctx.fillStyle = "#ffd700";
+        // 隨機星星與彩帶
+        ctx.globalAlpha = 0.5;
+        const shapes = ['star', 'circle'];
+        for(let i=0; i<50; i++) {
+          ctx.fillStyle = i % 2 === 0 ? '#ff4081' : '#ffce44';
+          const rx = Math.random() * canvas.width;
+          const ry = Math.random() * canvas.height;
           ctx.beginPath();
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.arc(rx, ry, Math.random() * 6 + 2, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.globalAlpha = 1.0;
 
-        // 彩帶
-        ctx.strokeStyle = "#ff69b4";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, 50);
-        ctx.bezierCurveTo(160, 0, 320, 100, 480, 40);
-        ctx.bezierCurveTo(540, 80, 640, 20, 640, 20);
-        ctx.stroke();
-
-        // 彩球
-        function drawBalloon(x, y, color) {
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.ellipse(x, y, 20, 30, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.moveTo(x, y + 30);
-          ctx.lineTo(x, y + 60);
-          ctx.strokeStyle = "#444";
-          ctx.stroke();
-        }
-        drawBalloon(100, 80, "#f66");
-        drawBalloon(540, 90, "#6cf");
-        drawBalloon(180, 60, "#fc6");
-        drawBalloon(460, 60, "#9f9");
-        drawBalloon(320, 100, "#f9c");
-
-        // 主圖片置中
-        const maxWidth = 480;
-        const maxHeight = 360;
-        const iw = baseImage.naturalWidth;
-        const ih = baseImage.naturalHeight;
-        const scale = Math.min(maxWidth / iw, maxHeight / ih);
-        const drawW = iw * scale;
-        const drawH = ih * scale;
-        const drawX = (canvas.width - drawW) / 2;
-        const drawY = 180;
-        ctx.drawImage(baseImage, drawX, drawY, drawW, drawH);
-
-        // 三層蛋糕 🎂
-        const cakeX = 260, cakeY = 560;
-        ctx.fillStyle = "#ffb6c1"; // 底層
-        ctx.fillRect(cakeX, cakeY, 120, 30);
-        ctx.fillStyle = "#ffddee";
-        ctx.fillRect(cakeX + 10, cakeY - 30, 100, 25); // 中層
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(cakeX + 20, cakeY - 55, 80, 20); // 上層
-
-        // 蠟燭與火焰
-        ctx.fillStyle = "#f00";
-        ctx.fillRect(cakeX + 60, cakeY - 75, 6, 15);
-        ctx.fillStyle = "#ff0";
-        ctx.beginPath();
-        ctx.arc(cakeX + 63, cakeY - 78, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Happy Birthday 文字
-        ctx.fillStyle = "#ff4081";
-        ctx.font = "bold 36px 'Microsoft JhengHei', sans-serif";
-        ctx.fillText("🎉 Happy Birthday! 🎂", 130, 60);
+        // 拍立得邊框
+        const imgScale = (canvas.width * 0.7) / baseImage.naturalWidth;
+        const imgW = baseImage.naturalWidth * imgScale;
+        const imgH = baseImage.naturalHeight * imgScale;
+        const x = (canvas.width - imgW) / 2;
+        const y = (canvas.height - imgH) / 2;
+        
+        // 陰影
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = "#ffffff";
+        const padding = canvas.width * 0.04;
+        ctx.fillRect(x - padding, y - padding, imgW + padding * 2, imgH + padding * 2 + padding * 3);
+        ctx.shadowBlur = 0;
+        
+        // 紙膠帶效果 (用簡單矩形模擬)
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        ctx.fillRect(canvas.width / 2 - 40, y - padding - 15, 80, 30);
+        
+        ctx.drawImage(baseImage, x, y, imgW, imgH);
+        
+        // 文字
+        ctx.fillStyle = "#d81b60";
+        const fontSize = Math.floor(canvas.width * 0.08);
+        ctx.font = `italic bold ${fontSize}px 'Microsoft JhengHei'`;
+        ctx.textAlign = "center";
+        ctx.fillText("Happy Birthday!", canvas.width / 2, y + imgH + padding * 2.5);
       }
     }
-
-
 
     function selectTemplate(name) {
       selectedTemplate = name;
@@ -335,32 +224,14 @@
     function reset() {
       selectedTemplate = null;
       buttons.forEach(btn => btn.classList.remove("active"));
-
-      const ratio = baseImage.naturalWidth / baseImage.naturalHeight;
-      let width = 640;
-      let height = width / ratio;
-
-      if (height > 640) {
-        height = 640;
-        width = height * ratio;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      canvasWrapper.style.width = width + "px";
-      canvasWrapper.style.height = height + "px";
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+      drawTemplate();
     }
 
-
     function save() {
-      const result = canvas.toDataURL();
+      const result = canvas.toDataURL('image/jpeg', 0.9);
       localStorage.setItem("collageImages", JSON.stringify([result]));
       window.location.href = "editor.html";
     }
   </script>
 </body>
-
 </html>

@@ -3,14 +3,19 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>調色編輯（RGB + HSL）</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
       min-height: 100vh;
       font-family: '微軟正黑體', sans-serif;
       background: linear-gradient(135deg, #e3f2fd, #ffffff);
-      padding: 30px;
+      padding: 30px 15px;
       text-align: center;
+      margin: 0;
+      box-sizing: border-box;
+      position: relative; /* 確保絕對定位的子元件基準點正確 */
     }
 
     h2 {
@@ -26,6 +31,7 @@
       margin-bottom: 30px;
       box-shadow: 0 6px 20px rgb(98, 141, 206);
       overflow: hidden;
+      max-width: 100%;
     }
 
     canvas {
@@ -93,6 +99,7 @@
       background: #268bd2;
     }
 
+    /* 頂部兩側定位欄 */
     .action-btns {
       position: absolute;
       top: 20px;
@@ -101,7 +108,6 @@
       gap: 10px;
       z-index: 200;
     }
-
 
     .action-btns button {
       background: #4da6e9;
@@ -121,7 +127,7 @@
       background: #2690ae;
     }
 
-
+    /* 品牌 Logo */
     .brand-logo {
       position: absolute;
       top: 20px;
@@ -144,6 +150,45 @@
       color: #2690ae;
       letter-spacing: 1px;
     }
+
+    /* 📱 手機與平板端行動裝置適配 (RWD) */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px 10px;
+      }
+      
+      .brand-logo {
+        top: 15px;
+        left: 15px;
+      }
+      .brand-logo img {
+        width: 50px;
+        height: 50px;
+      }
+      .brand-logo span {
+        font-size: 20px;
+      }
+
+      .action-btns {
+        top: 15px;
+        right: 15px;
+      }
+      .action-btns button {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      h2 {
+        margin-top: 55px; /* 避開 Logo 高度 */
+        margin-bottom: 15px;
+        font-size: 22px;
+      }
+
+      .sliders-group {
+        gap: 20px;
+      }
+    }
   </style>
 </head>
 
@@ -164,28 +209,21 @@
     <canvas id="canvas"></canvas>
   </div>
 
-  <div style="margin-top: 40px;"></div>
-
   <div class="sliders-group">
     <div class="sliders">
-      <div class="slider-row"><label>R</label><span id="rVal">0</span><input type="range" min="-255" max="255" value="0"
-          id="rSlider" /></div>
-      <div class="slider-row"><label>G</label><span id="gVal">0</span><input type="range" min="-255" max="255" value="0"
-          id="gSlider" /></div>
-      <div class="slider-row"><label>B</label><span id="bVal">0</span><input type="range" min="-255" max="255" value="0"
-          id="bSlider" /></div>
+      <div class="slider-row"><label>R</label><span id="rVal">0</span><input type="range" min="-255" max="255" value="0" id="rSlider" /></div>
+      <div class="slider-row"><label>G</label><span id="gVal">0</span><input type="range" min="-255" max="255" value="0" id="gSlider" /></div>
+      <div class="slider-row"><label>B</label><span id="bVal">0</span><input type="range" min="-255" max="255" value="0" id="bSlider" /></div>
     </div>
     <div class="sliders">
-      <div class="slider-row"><label>H</label><span id="hVal">0</span><input type="range" min="0" max="360" value="0"
-          id="hSlider" /></div>
-      <div class="slider-row"><label>S</label><span id="sVal">100</span><input type="range" min="0" max="200"
-          value="100" id="sSlider" /></div>
-      <div class="slider-row"><label>L</label><span id="lVal">100</span><input type="range" min="0" max="200"
-          value="100" id="lSlider" /></div>
+      <div class="slider-row"><label>H</label><span id="hVal">0</span><input type="range" min="0" max="360" value="0" id="hSlider" /></div>
+      <div class="slider-row"><label>S</label><span id="sVal">100</span><input type="range" min="0" max="200" value="100" id="sSlider" /></div>
+      <div class="slider-row"><label>L</label><span id="lVal">100</span><input type="range" min="0" max="200" value="100" id="lSlider" /></div>
     </div>
   </div>
 
   <script>
+    // 您的既有 JavaScript 邏輯請維持不變
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const canvasWrapper = document.getElementById("canvasWrapper");

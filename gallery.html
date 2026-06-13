@@ -3,7 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的展示牆</title>
+    <link rel="icon" href="logo.PNG" type="image/PNG">
     <style>
         body {
             margin: 0;
@@ -193,6 +195,7 @@
             }
         }
 
+        /* --- Logo 樣式與 RWD 適配 --- */
         .brand-logo {
             position: absolute;
             top: 20px;
@@ -214,6 +217,30 @@
             font-weight: bold;
             color: #2690ae;
             letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 26px;
+                /* 縮小標題字體 */
+                margin-top: 90px;
+                /* 增加上方間距，避免 Logo 遮擋 */
+                margin-bottom: 20px;
+            }
+
+            .brand-logo {
+                top: 15px;
+                left: 15px;
+            }
+
+            .brand-logo img {
+                width: 50px;
+                height: 50px;
+            }
+
+            .brand-logo span {
+                font-size: 20px;
+            }
         }
     </style>
 </head>

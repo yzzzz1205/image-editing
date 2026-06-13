@@ -3,38 +3,43 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>圖片編輯</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
-      font-family: '微軟正黑體';
-      background: linear-gradient(135deg, #e3f2fd, #ffffff);
-      padding: 30px;
-      text-align: center;
-      position: relative;
       min-height: 100vh;
+      font-family: '微軟正黑體', sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      text-align: center;
+      padding: 30px 15px;
+      margin: 0;
       box-sizing: border-box;
+      position: relative;
     }
 
     h2 {
       font-size: 28px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #333;
     }
 
+    /* 圖片外框樣式與筆刷頁一致 */
     .image-container {
+      display: inline-block;
+      border-radius: 20px;
+      background: white;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgb(98, 141, 206);
+      margin-bottom: 25px;
+      max-width: 100%;
+      box-sizing: border-box;
       width: 640px;
       height: 360px;
-      margin: 0 auto 40px;
-      border-radius: 20px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      box-shadow: 0 8px 20px rgb(98, 141, 206);
     }
 
     .image-container img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -43,10 +48,10 @@
     .tool-row {
       display: flex;
       justify-content: center;
-      gap: 40px;
-      margin-top: 40px;
-      font-size: 14px;
+      gap: 15px;
+      margin-top: 25px;
       flex-wrap: wrap;
+      padding: 0 10px;
     }
 
     .tool-item {
@@ -56,12 +61,12 @@
       cursor: pointer;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       padding: 10px;
-      border-radius: 10px;
+      border-radius: 15px;
+      width: 80px;
     }
 
     .tool-item:hover {
       transform: scale(1.08);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
       background: #eaf6ff;
     }
 
@@ -71,6 +76,7 @@
       margin-bottom: 5px;
     }
 
+    /* 頂部兩側定位欄 */
     .action-btns {
       position: absolute;
       top: 20px;
@@ -89,7 +95,7 @@
       cursor: pointer;
       color: white;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, background 0.2s ease;
     }
 
     .action-btns button:hover {
@@ -119,6 +125,22 @@
       color: #2690ae;
       letter-spacing: 1px;
     }
+
+    /* 📱 RWD 適配 */
+    @media (max-width: 768px) {
+      body { padding: 15px 10px; }
+      
+      .brand-logo { top: 15px; left: 15px; }
+      .brand-logo img { width: 50px; height: 50px; }
+      .brand-logo span { font-size: 20px; }
+
+      .action-btns { top: 15px; right: 15px; }
+      .action-btns button { width: 36px; height: 36px; font-size: 16px; }
+
+      h2 { margin-top: 55px; font-size: 22px; }
+      
+      .image-container { height: auto; min-height: 200px; }
+    }
   </style>
 </head>
 
@@ -139,60 +161,73 @@
   </div>
 
   <div class="tool-row">
-    <div class="tool-item" onclick="window.location.href='sticker.html'">
-      <img src="icon-sticker.png" alt="貼紙" />
-      貼紙
-    </div>
-    <div class="tool-item" onclick="window.location.href='filter.html'">
-      <img src="icon-filter.png" alt="濾鏡" />
-      濾鏡
-    </div>
-    <div class="tool-item" onclick="window.location.href='adjust.html'">
-      <img src="icon-adjust.png" alt="調色" />
-      調色
-    </div>
-    <div class="tool-item" onclick="window.location.href='brush.html'">
-      <img src="icon-brush.png" alt="塗鴉筆" />
-      塗鴉筆
-    </div>
-    <div class="tool-item" onclick="window.location.href='template.html'">
-      <img src="icon-template.png" alt="模板" />
-      模板
-    </div>
+    <div class="tool-item" onclick="window.location.href='sticker.html'"><img src="icon-sticker.png" alt="貼紙" />貼紙</div>
+    <div class="tool-item" onclick="window.location.href='filter.html'"><img src="icon-filter.png" alt="濾鏡" />濾鏡</div>
+    <div class="tool-item" onclick="window.location.href='adjust.html'"><img src="icon-adjust.png" alt="調色" />調色</div>
+    <div class="tool-item" onclick="window.location.href='brush.html'"><img src="icon-brush.png" alt="塗鴉筆" />塗鴉筆</div>
+    <div class="tool-item" onclick="window.location.href='template.html'"><img src="icon-template.png" alt="模板" />模板</div>
   </div>
 
   <script>
     const imgEl = document.getElementById('singleImage');
     const images = JSON.parse(localStorage.getItem('collageImages')) || [];
-    let originalSrc = '';
 
     if (images.length === 1 && images[0].startsWith('data:image')) {
-      originalSrc = images[0];
-      imgEl.src = originalSrc;
+      imgEl.src = images[0];
     } else {
       alert('無有效圖片，將返回首頁。');
       window.location.href = 'index.html';
     }
 
     function saveImage() {
+      document.body.style.pointerEvents = 'none';
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL('image/png');
-        localStorage.setItem('finalCollage', dataURL);
-        window.location.href = 'result.html';
-      };
-      img.crossOrigin = 'anonymous';
-      img.src = imgEl.src;
+        try {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1600;
+          const MAX_HEIGHT = 1600;
+          let width = img.naturalWidth;
+          let height = img.naturalHeight;
 
-      //防誤點
-      document.querySelector('body').style.pointerEvents = 'none';
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            if (width > height) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            } else {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let dataURL = canvas.toDataURL('image/jpeg', 0.85);
+          try {
+            localStorage.setItem('finalCollage', dataURL);
+            window.location.href = 'result.html';
+          } catch (quotaError) {
+            dataURL = canvas.toDataURL('image/jpeg', 0.6);
+            localStorage.setItem('finalCollage', dataURL);
+            window.location.href = 'result.html';
+          }
+        } catch (error) {
+          document.body.style.pointerEvents = 'auto';
+          alert('圖片處理失敗，請稍後再試：' + error.message);
+        }
+      };
+      img.onerror = () => {
+        document.body.style.pointerEvents = 'auto';
+        alert('圖片載入失敗，無法進行儲存。');
+      };
+      if (imgEl.src && !imgEl.src.startsWith('data:')) {
+        img.crossOrigin = 'anonymous';
+      }
+      img.src = imgEl.src;
     }
   </script>
 </body>
-
 </html>

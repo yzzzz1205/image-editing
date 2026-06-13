@@ -3,15 +3,19 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>塗鴉筆</title>
+  <link rel="icon" href="logo.PNG" type="image/PNG">
   <style>
     body {
       min-height: 100vh;
       font-family: '微軟正黑體', sans-serif;
       background: linear-gradient(135deg, #e3f2fd, #ffffff);
       text-align: center;
-      padding: 30px;
+      padding: 30px 15px;
       margin: 0;
+      box-sizing: border-box;
+      position: relative; /* 確保絕對定位的子元件基準點正確 */
     }
 
     h2 {
@@ -20,49 +24,140 @@
       color: #333;
     }
 
+    /* 🎨 畫布外框：適配 RWD 核心 */
     #canvasWrapper {
       display: inline-block;
       border-radius: 20px;
       background: transparent;
       overflow: hidden;
       box-shadow: 0 6px 18px rgb(98, 141, 206);
-      margin-bottom: 30px;
+      margin-bottom: 25px;
+      max-width: 100%; /* 防止超出螢幕 */
+      height: auto !important; /* 蓋掉 JS 寫入的固定高度，使其能依比例縮放 */
+      box-sizing: border-box;
     }
 
     canvas {
       display: block;
       border-radius: 20px;
-      max-width: 100%;
+      max-width: 100%; /* 寬度跟隨外框自動填滿 */
+      height: auto !important; /* 確保高度維持比例 */
+      touch-action: none; /* 阻止瀏覽器預設的觸控滾動行為 */
     }
 
+    /* 調色盤容器：大螢幕預設不換行 */
     .color-picker {
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
+      margin: 20px auto;
+      flex-wrap: nowrap; /* 👈 大螢幕預設不換行 */
+      max-width: 850px;  /* 👈 放大最大寬度，確保所有按鈕能排在同一行 */
+      padding: 0 10px;
     }
 
     .color-picker button {
       width: 34px;
       height: 34px;
-      border: 2px solid #ccc;
+      border: 2px solid #ffffff;
       border-radius: 50%;
       cursor: pointer;
-      transition: transform 0.2s, border-color 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
 
-    .color-picker button:hover {
+    /* 左側：自訂圓形漸層調色盤 */
+    .custom-picker-wrapper {
+      width: 36px;
+      height: 36px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      cursor: pointer;
+      background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+
+    /* 右側：系統原生調色盤（圓形樣式） */
+    .native-picker-style {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-sizing: border-box;
+      padding: 0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .native-picker-style::-webkit-color-swatch-wrapper { padding: 0; }
+    .native-picker-style::-webkit-color-swatch { border: none; border-radius: 50%; }
+    .native-picker-style::-moz-color-swatch { border: none; border-radius: 50%; }
+
+    .color-picker button:hover, .custom-picker-wrapper:hover, .native-picker-style:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    .color-picker button.active, .custom-picker-wrapper.active, .native-picker-style.active {
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 3px #4da6e9, 0 4px 12px rgba(0, 0, 0, 0.3);
       transform: scale(1.1);
-      border-color: #555;
     }
 
-    .color-picker button.active {
-      border: 3px solid #f78da7;
-      box-shadow: 0 0 0 8px rgba(255, 77, 77, 0.3);
+    /* 工具模式按鈕欄 */
+    .tool-modes {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      padding: 0 10px;
     }
 
+    .mode-btn {
+      padding: 10px 22px;
+      border: 2px solid #ccc;
+      background: #fff;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #555;
+    }
 
+    .mode-btn:hover {
+      background: #f5f5f5;
+      transform: translateY(-2px);
+    }
+
+    .mode-btn.active {
+      background: #4da6e9;
+      color: white;
+      border-color: #4da6e9;
+      box-shadow: 0 4px 12px rgba(77, 166, 233, 0.4);
+    }
+
+    /* 尺寸拉條調整 */
+    .brush-size-control {
+      margin-top: 25px;
+    }
+    .brush-size-control input[type="range"] {
+      width: 200px;
+      max-width: 70%;
+      vertical-align: middle;
+      accent-color: #4da6e9;
+    }
+
+    /* 頂部兩側定位欄 */
     .action-btns {
       position: absolute;
       top: 20px;
@@ -89,7 +184,6 @@
       background: #2690ae;
     }
 
-
     .brand-logo {
       position: absolute;
       top: 20px;
@@ -111,6 +205,65 @@
       font-weight: bold;
       color: #2690ae;
       letter-spacing: 1px;
+    }
+
+    /* 📱 手機與平板端行動裝置適配 (Media Queries) */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px 10px;
+      }
+
+      /* 保持手機版 Logo 在左上角 */
+      .brand-logo {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        margin: 0;
+        justify-content: flex-start;
+      }
+      .brand-logo img {
+        width: 50px; /* 手機版略為縮小圖標更精緻 */
+        height: 50px;
+      }
+      .brand-logo span {
+        font-size: 20px;
+      }
+
+      /* 保持手機版返回與確認按鈕在右上角 */
+      .action-btns {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        margin: 0;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      
+      .action-btns button {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      /* 調整手機版標題的上方間距，防止與絕對定位的 Logo/按鈕重疊 */
+      h2 {
+        font-size: 22px;
+        margin-top: 55px;
+        margin-bottom: 15px;
+      }
+
+      /* 手機版寬度不足時，顏色欄位開啟自動換行 */
+      .color-picker {
+        flex-wrap: wrap;
+        max-width: 100%;
+      }
+
+      .mode-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        flex: 1 1 calc(50% - 15px); /* 在小螢幕下按鈕能均勻排開 */
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -147,58 +300,65 @@
     <button style="background:#5461C8" data-color="#5461C8" onclick="setColor('#5461C8')"></button>
     <button style="background:#77C19A" data-color="#77C19A" onclick="setColor('#77C19A')"></button>
     <button style="background:#5CAA7F" data-color="#5CAA7F" onclick="setColor('#5CAA7F')"></button>
+    
+    <div id="customColorBtn" class="custom-picker-wrapper" onclick="triggerCustomPicker()"></div>
+    
+    <input type="color" id="nativeColorPicker" class="native-picker-style" value="#ff4d4d" oninput="setCustomColor(this.value)">
   </div>
 
-  <div style="margin-top: 25px;">
-    <label for="brushSize" style="font-weight: bold;">筆刷大小：</label>
-    <input type="range" id="brushSize" min="1" max="30" value="6" style="vertical-align: middle;" />
+  <div class="tool-modes">
+    <button id="btnBrush" class="mode-btn active" onclick="setMode('brush')">✎ 畫筆模式</button>
+    <button id="btnPixelEraser" class="mode-btn" onclick="setMode('pixelEraser')">🧽 像素橡皮擦</button>
+    <button id="btnObjectEraser" class="mode-btn" onclick="setMode('objectEraser')">🧩 物件橡皮擦</button>
   </div>
 
-  <div style="margin-top: 20px;">
-    <button id="eraserBtn" onclick="toggleEraser()"
-      style="padding: 8px 18px; border: none; background: #eee; border-radius: 20px; font-size: 15px; cursor: pointer;">
-      ✎ 切換橡皮擦
-    </button>
+  <div class="brush-size-control">
+    <label for="brushSize" style="font-weight: bold;">尺寸大小：</label>
+    <input type="range" id="brushSize" min="1" max="40" value="6" />
   </div>
 
-  <script>
-    let originalPixels;
+  <script {nonce}>
     const canvas = document.getElementById('drawCanvas');
     const ctx = canvas.getContext('2d');
     const canvasWrapper = document.getElementById('canvasWrapper');
 
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d');
+
+    let baseImg = new Image();
     let drawing = false;
     let currentColor = '#000';
+    let brushSize = 6;
+    let currentMode = 'brush'; 
     let lastX = 0;
     let lastY = 0;
+
+    let strokes = [];         
+    let currentStroke = null;  
 
     const images = JSON.parse(localStorage.getItem('collageImages')) || [];
 
     if (images.length === 1) {
-      const baseImg = new Image();
       baseImg.onload = () => {
         const ratio = baseImg.naturalWidth / baseImg.naturalHeight;
         let width = 640;
         let height = width / ratio;
 
-        // 限制高度最大為 480
         if (height > 480) {
           height = 480;
           width = height * ratio;
         }
 
-        // 設定 canvas 實際繪圖大小
         canvas.width = width;
         canvas.height = height;
-
-        // 設定外觀尺寸
+        offCanvas.width = width;
+        offCanvas.height = height;
+        
         canvasWrapper.style.width = width + 'px';
         canvasWrapper.style.height = height + 'px';
 
-        ctx.drawImage(baseImg, 0, 0, width, height);
-        originalPixels = ctx.getImageData(0, 0, width, height);
-
-        updateCursor();
+        redrawCanvas();
+        setColor('#000'); 
       };
       baseImg.src = images[0];
     } else {
@@ -206,102 +366,265 @@
       window.location.href = 'template.html';
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-      drawing = true;
+    function redrawCanvas() {
+      offCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+      strokes.forEach(stroke => {
+        if (stroke.points.length < 1) return;
+
+        if (stroke.type === 'pixelEraser') {
+          offCtx.globalCompositeOperation = 'destination-out';
+        } else {
+          offCtx.globalCompositeOperation = 'source-over';
+        }
+
+        offCtx.strokeStyle = stroke.color;
+        offCtx.lineWidth = stroke.size;
+        offCtx.lineCap = 'round';
+        offCtx.lineJoin = 'round';
+        offCtx.beginPath();
+        offCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) {
+          offCtx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        offCtx.stroke();
+      });
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (baseImg.complete) {
+        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+      }
+
+      ctx.drawImage(offCanvas, 0, 0);
+    }
+
+    function eraseStrokeAt(x, y) {
+      let erasedAny = false;
+      const eraserRadius = brushSize; 
+
+      for (let i = strokes.length - 1; i >= 0; i--) {
+        const stroke = strokes[i];
+        let hit = false;
+
+        for (let j = 0; j < stroke.points.length; j++) {
+          const pt = stroke.points[j];
+          const distance = Math.hypot(pt.x - x, pt.y - y);
+          if (distance <= (stroke.size / 2 + eraserRadius)) {
+            hit = true;
+            break;
+          }
+        }
+
+        if (hit) {
+          strokes.splice(i, 1); 
+          erasedAny = true;
+        }
+      }
+
+      if (erasedAny) {
+        redrawCanvas();
+      }
+    }
+
+    /**
+     * 🎯 RWD 關鍵函式：計算畫面縮放比例並精準轉換滑鼠/觸控座標
+     */
+    function getCanvasCoords(e, isTouch = false) {
       const rect = canvas.getBoundingClientRect();
-      lastX = e.clientX - rect.left;
-      lastY = e.clientY - rect.top;
-    });
+      
+      // 計算畫布實際像素與手機螢幕當前顯示尺寸的縮放比
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
 
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('mouseleave', () => drawing = false);
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!drawing) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      if (isEraser) {
-        const eraserSize = brushSize;
-        ctx.putImageData(
-          originalPixels,
-          0, 0,
-          x - eraserSize / 2,
-          y - eraserSize / 2,
-          eraserSize,
-          eraserSize
-        );
+      let clientX, clientY;
+      if (isTouch) {
+        if (!e.touches || e.touches.length === 0) return null;
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
       } else {
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = brushSize;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      // 轉換成正確的 Canvas 內部繪圖座標
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    // 抽出核心繪圖邏輯以供滑鼠與觸控共用
+    function handleDrawStart(coords) {
+      if (!coords) return;
+      drawing = true;
+      lastX = coords.x;
+      lastY = coords.y;
+
+      if (currentMode === 'objectEraser') {
+        eraseStrokeAt(lastX, lastY);
+      } else {
+        currentStroke = {
+          type: currentMode,
+          color: currentColor,
+          size: brushSize,
+          points: [{ x: lastX, y: lastY }]
+        };
+        strokes.push(currentStroke);
+        redrawCanvas();
+      }
+    }
+
+    function handleDrawMove(coords) {
+      if (!drawing || !coords) return;
+
+      const x = coords.x;
+      const y = coords.y;
+
+      if (currentMode === 'objectEraser') {
+        eraseStrokeAt(x, y);
+      } else {
+        if (currentStroke) {
+          currentStroke.points.push({ x: x, y: y });
+        }
+        redrawCanvas();
       }
 
       lastX = x;
       lastY = y;
+    }
+
+    function handleDrawEnd() {
+      drawing = false; 
+      currentStroke = null;
+    }
+
+    /* 🖥️ 滑鼠監聽事件 */
+    canvas.addEventListener('mousedown', (e) => {
+      const coords = getCanvasCoords(e, false);
+      handleDrawStart(coords);
     });
 
+    canvas.addEventListener('mousemove', (e) => {
+      const coords = getCanvasCoords(e, false);
+      handleDrawMove(coords);
+    });
+
+    canvas.addEventListener('mouseup', handleDrawEnd);
+    canvas.addEventListener('mouseleave', handleDrawEnd);
+
+    /* 📱 行動端觸控監聽事件 (RWD 增強) */
+    canvas.addEventListener('touchstart', (e) => {
+      // 正在畫畫或使用橡皮擦時，阻止手機畫面跟著滾動捲頁
+      if (currentMode !== 'objectEraser' || drawing) {
+        e.preventDefault();
+      }
+      const coords = getCanvasCoords(e, true);
+      handleDrawStart(coords);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // 阻止手勢干擾
+      const coords = getCanvasCoords(e, true);
+      handleDrawMove(coords);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', handleDrawEnd);
+    canvas.addEventListener('touchcancel', handleDrawEnd);
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      
+      if (mode === 'brush') {
+        document.getElementById('btnBrush').classList.add('active');
+        restoreColorActiveState();
+      } else if (mode === 'pixelEraser') {
+        document.getElementById('btnPixelEraser').classList.add('active');
+        clearAllColorActive();
+      } else if (mode === 'objectEraser') {
+        document.getElementById('btnObjectEraser').classList.add('active');
+        clearAllColorActive();
+      }
+      updateCursor();
+    }
 
     function setColor(color) {
       currentColor = color;
-      isEraser = false;
-      updateCursor();
-      // 先移除所有按鈕的 active 狀態
-      document.querySelectorAll('.color-picker button').forEach(btn => btn.classList.remove('active'));
-      // 加上目前選取的按鈕 active 狀態
-      const btn = Array.from(document.querySelectorAll('.color-picker button')).find(b => b.dataset.color === color);
-      if (btn) btn.classList.add('active');
+      setMode('brush'); 
+    }
+
+    function triggerCustomPicker() {
+      document.getElementById('nativeColorPicker').click();
+    }
+
+    function setCustomColor(color) {
+      currentColor = color;
+      setMode('brush');
+      clearAllColorActive();
+      
+      document.getElementById('customColorBtn').classList.add('active');
+      document.getElementById('nativeColorPicker').classList.add('active');
+    }
+
+    function clearAllColorActive() {
+      document.querySelectorAll('.color-picker button, #customColorBtn, #nativeColorPicker').forEach(b => b.classList.remove('active'));
+    }
+
+    function restoreColorActiveState() {
+      clearAllColorActive();
+      const activeBtn = Array.from(document.querySelectorAll('.color-picker button')).find(b => b.dataset.color === currentColor);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      } else {
+        document.getElementById('customColorBtn').classList.add('active');
+        document.getElementById('nativeColorPicker').classList.add('active');
+      }
     }
 
     function reset() {
-      if (images.length === 1) {
-        const img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        img.src = images[0];
+      if (strokes.length === 0) return;
+      if (confirm('確定要清除畫布上的所有塗鴉嗎？')) {
+        strokes = [];
+        redrawCanvas();
       }
     }
 
     function save() {
-      const dataUrl = canvas.toDataURL();
-      localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
-      window.location.href = 'editor.html';
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+        window.location.href = 'editor.html';
+      } catch (error) {
+        console.warn('PNG 容量滿載，啟動超高畫質 JPEG 備用策略...', error);
+        try {
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+          localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+          window.location.href = 'editor.html';
+        } catch (error2) {
+          console.warn('容量依舊吃緊，啟動高規格 0.88 壓縮比 JPEG...', error2);
+          try {
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            localStorage.setItem('collageImages', JSON.stringify([dataUrl]));
+            window.location.href = 'editor.html';
+          } catch (error3) {
+            alert('儲存失敗！您的瀏覽器快取儲存空間已滿。\n請先到「展示牆」中清理刪除一些不需要的老舊照片，釋放空間後即可恢復！');
+          }
+        }
+      }
     }
-
-    let brushSize = 6;
-    let isEraser = false;
 
     document.getElementById('brushSize').addEventListener('input', e => {
       brushSize = parseInt(e.target.value);
     });
 
-    function toggleEraser() {
-      isEraser = !isEraser;
-      updateCursor();
-
-      const btn = document.getElementById('eraserBtn');
-      if (isEraser) {
-        btn.style.background = '#ff9d9d';
-        btn.textContent = '🧽 橡皮擦中（點擊切換筆刷）';
-      } else {
-        btn.style.background = '#eee';
-        btn.textContent = '✎ 切換橡皮擦';
-      }
-    }
-
     function updateCursor() {
-      if (isEraser) {
+      if (currentMode === 'pixelEraser' || currentMode === 'objectEraser') {
         canvas.style.cursor = "url('eraser.png') 8 8, auto";
       } else {
         canvas.style.cursor = "url('brush.png') 4 28, auto";
       }
     }
-
   </script>
 </body>
 
