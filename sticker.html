@@ -376,24 +376,49 @@
       resizeHandle.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); startResize(e.clientX, e.clientY, false); });
       resizeHandle.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); startResize(e.touches[0].clientX, e.touches[0].clientY, true); }, { passive: false });
 
-      wrapper.addEventListener('mousedown', function (e) {
+      // [修改為以下這段新的邏輯]
+      function startDrag(e, isTouch = false) {
+        // 防止點擊到功能按鈕時觸發拖拽
         if (e.target.classList.contains('delete-btn') || e.target.classList.contains('rotate-btn') || e.target.classList.contains('resize-handle')) return;
         e.preventDefault();
-        const sticker = this;
-        const startX = e.clientX;
-        const startY = e.clientY;
+
+        const sticker = e.currentTarget;
+        const startX = isTouch ? e.touches[0].clientX : e.clientX;
+        const startY = isTouch ? e.touches[0].clientY : e.clientY;
         const startLeft = parseFloat(sticker.style.left) || 0;
         const startTop = parseFloat(sticker.style.top) || 0;
-        function onMouseMove(moveEvent) {
-          const dx = moveEvent.clientX - startX;
-          const dy = moveEvent.clientY - startY;
+
+        function onMove(moveEvent) {
+          const curX = isTouch ? moveEvent.touches[0].clientX : moveEvent.clientX;
+          const curY = isTouch ? moveEvent.touches[0].clientY : moveEvent.clientY;
+          const dx = curX - startX;
+          const dy = curY - startY;
           sticker.style.left = (startLeft + dx) + 'px';
           sticker.style.top = (startTop + dy) + 'px';
         }
-        function onMouseUp() { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-      });
+
+        function onEnd() {
+          if (isTouch) {
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onEnd);
+          } else {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+          }
+        }
+
+        if (isTouch) {
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('touchend', onEnd);
+        } else {
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onEnd);
+        }
+      }
+
+      // 綁定兩類事件
+      wrapper.addEventListener('mousedown', (e) => startDrag(e, false));
+      wrapper.addEventListener('touchstart', (e) => startDrag(e, true), { passive: false });
     }
 
     document.getElementById('uploadSticker').addEventListener('change', e => {
@@ -415,7 +440,7 @@
 
       // 1. 複製節點
       const clone = canvasArea.cloneNode(true);
-      
+
       // 2. 強制重置樣式，移除所有響應式限制
       clone.style.position = 'fixed';
       clone.style.left = '-99999px';
@@ -427,13 +452,13 @@
       clone.style.border = 'none';
       clone.style.borderRadius = '0';
       clone.style.boxShadow = 'none';
-      
+
       // 確保內部圖片不受原本 CSS 的 object-fit 影響，強制填滿
       const cloneImg = clone.querySelector('img#baseImage');
       if (cloneImg) {
         cloneImg.style.width = '100%';
         cloneImg.style.height = '100%';
-        cloneImg.style.objectFit = 'fill'; 
+        cloneImg.style.objectFit = 'fill';
       }
 
       // 3. 處理貼紙尺寸
@@ -449,28 +474,28 @@
       document.body.appendChild(clone);
 
       // 4. 渲染
-      html2canvas(clone, { 
-        scale: 1, 
-        useCORS: true, 
-        allowTaint: true, 
+      html2canvas(clone, {
+        scale: 1,
+        useCORS: true,
+        allowTaint: true,
         backgroundColor: null,
         width: baseImage.naturalWidth,
         height: baseImage.naturalHeight
       }).then(canvas => {
         let result = canvas.toDataURL('image/jpeg', 0.85);
-        try { 
-          localStorage.setItem('collageImages', JSON.stringify([result])); 
-          window.location.href = 'editor.html'; 
-        } catch (storageError) { 
-          result = canvas.toDataURL('image/jpeg', 0.6); 
-          localStorage.setItem('collageImages', JSON.stringify([result])); 
-          window.location.href = 'editor.html'; 
+        try {
+          localStorage.setItem('collageImages', JSON.stringify([result]));
+          window.location.href = 'editor.html';
+        } catch (storageError) {
+          result = canvas.toDataURL('image/jpeg', 0.6);
+          localStorage.setItem('collageImages', JSON.stringify([result]));
+          window.location.href = 'editor.html';
         }
-      }).catch(err => { 
-        alert('儲存失敗，請重試！'); 
-        btnSave.disabled = false; 
-      }).finally(() => { 
-        clone.remove(); 
+      }).catch(err => {
+        alert('儲存失敗，請重試！');
+        btnSave.disabled = false;
+      }).finally(() => {
+        clone.remove();
       });
     }
   </script>
